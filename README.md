@@ -33,7 +33,6 @@ e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L 
 
 ### Usage
 
-<pre>
 ```C
 #include <logger.h>
 
@@ -82,7 +81,6 @@ CL_ASSERT(expr, messageSuccess, messageFailure, RetVal, ...)
 void log_shutdown();
 
 ```
-</pre>
 
 ### Implemented Features
 
