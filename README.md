@@ -34,19 +34,11 @@ e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L 
 ### Usage
 
 <pre>
-```c
+```C
 #include <logger.h>
 
 // Call this at the start of your programm
 int log_init("logfile.log", "$B[$T] $L [$F] $C$E");
-
-// To log some information use one of the following macros
-CS_TRACE("Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
-CS_DEBUG("Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
-CS_INFO(" Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
-CS_WARN(" Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
-CS_ERROR("Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
-CS_FATAL("Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
 
 // You can change the message formating at runtime
 void set_Formating("$B[$T] $A-$F$E $C");
@@ -61,6 +53,30 @@ void use_Formating_Backup();
 //  3    =>   buffer: TRACE + DEBUG + INFO
 //  4    =>   buffer: TRACE + DEBUG + INFO + WARN
 void set_buffer_Level(2);
+
+// To log some information use one of the following macros
+CS_TRACE("Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
+CS_DEBUG("Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
+CS_INFO(" Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
+CS_WARN(" Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
+CS_ERROR("Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
+CS_FATAL("Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
+
+// Call this to automaticly log function Starts
+CL_LOG_FUNC_START("")
+CL_LOG_FUNC_START("start param1: %d", someInt)
+
+// Call this to automaticly log the successfull End of a function
+CL_LOG_FUNC_END("")
+CL_LOG_FUNC_END("start param1: %d", someInt)
+
+// Use this vaitation to make check some consition and log diffrent messages
+CL_VALIDATE(expr, messageSuccess, messageFailure)
+
+// Use this assert to make sure your condition is true
+// The CL_ASSERT macro inserts a 'return RetVal’ if consition != true 
+CL_ASSERT(expr, messageSuccess, messageFailure, RetVal, ...)
+
 
 // Call this at the end of your programm to push all buffered messages into the log file
 void log_shutdown();
