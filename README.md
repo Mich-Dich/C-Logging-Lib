@@ -84,7 +84,8 @@ e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L 
 
 ### Implemented Features
 
-1. **Log Levels:**  | TRACE, DEBUG, INFO, WARNING, ERROR, and FATAL levels are supported to give you fine-grained control over the verbosity of your logs.
+1. **Log Levels:**
+   - TRACE, DEBUG, INFO, WARNING, ERROR, and FATAL levels are supported to give you fine-grained control over the verbosity of your logs.
 
 2. **Log Formatting:**
    - Customize log message formats, including timestamp, log level, and other relevant information, to enhance readability and analysis.
