@@ -22,13 +22,51 @@ e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L 
 | $Y	 | Year	      | yyyy            |
 | $O	 | Month	      | mm              |
 | $D	 | Day	      | dd              |
-|          General                     |
+|      |             |                 |
 | $L	 | LogLevel    | [TRACE], [DEBUG]|
 | $F	 | Func. Name  | main, foo       |
 | $A	 | File Name	| main.c foo.c    |
 | $B	 | Color Begin	| only on Linux   |
 | $E	 | Color End	| only on Linux   |
 | $C	 | Log message |                 |
+
+
+### Usage
+
+<pre>
+```c
+#include <logger.h>
+
+// Call this at the start of your programm
+int log_init("logfile.log", "$B[$T] $L [$F] $C$E");
+
+// To log some information use one of the following macros
+CS_TRACE("Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
+CS_DEBUG("Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
+CS_INFO(" Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
+CS_WARN(" Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
+CS_ERROR("Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
+CS_FATAL("Your message goes here, us standart variable formating int: %d, string: %s", someInt, someString)
+
+// You can change the message formating at runtime
+void set_Formating("$B[$T] $A-$F$E $C");
+
+// You can also revert back to your previous Format
+void use_Formating_Backup();
+
+// Define witch log levels should be written to log file directly and witch should be buffered
+//  0    =>   write all logs directly to log file
+//  1    =>   buffer: TRACE
+//  2    =>   buffer: TRACE + DEBUG
+//  3    =>   buffer: TRACE + DEBUG + INFO
+//  4    =>   buffer: TRACE + DEBUG + INFO + WARN
+void set_buffer_Level(2);
+
+// Call this at the end of your programm to push all buffered messages into the log file
+void log_shutdown();
+
+```
+</pre>
 
 ### Implemented Features
 
