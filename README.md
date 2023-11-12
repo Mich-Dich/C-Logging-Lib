@@ -6,31 +6,6 @@ Welcome to the C Logging Library repository! This library is designed to provide
 
 ## Features
 
-### Formating
-Formating the LogMessages can be customised with the following tags<br>
-to format all following Log Messages use: set_Formating(char* format);<br>
-e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
-
-| Code | Description | Format/Example  |
-|------|-------------|-----------------|
-| $T   | Time        | hh:mm:ss        |
-| $H   | Time Hour   | hh              |
-| $M   | Time Min.   | mm              |
-| $S   | Time Sec.   | ss              |
-|      |             |                 |
-| $N   | Date        | yyyy:mm:dd      |
-| $Y	 | Year	      | yyyy            |
-| $O	 | Month	      | mm              |
-| $D	 | Day	      | dd              |
-|      |             |                 |
-| $L	 | LogLevel    | [TRACE], [DEBUG]|
-| $F	 | Func. Name  | main, foo       |
-| $A	 | File Name	| main.c foo.c    |
-| $B	 | Color Begin	| only on Linux   |
-| $E	 | Color End	| only on Linux   |
-| $C	 | Log message |                 |
-
-
 ### Usage
 
 ```C
@@ -61,13 +36,13 @@ CS_WARN(" Your message goes here use standart formating: int: %d, string: %s", s
 CS_ERROR("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
 CS_FATAL("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
 
-// Call this to automaticly log function Starts
-CL_LOG_FUNC_START("")
-CL_LOG_FUNC_START("start param1: %d", someInt)
+// Call this to automaticly log function Starts 
+CL_LOG_FUNC_START("")                           // No Args
+CL_LOG_FUNC_START("start param1: %d", someInt)  // With Args
 
 // Call this to automaticly log the successfull End of a function
-CL_LOG_FUNC_END("")
-CL_LOG_FUNC_END("start param1: %d", someInt)
+CL_LOG_FUNC_END("")                             // No Args
+CL_LOG_FUNC_END("start param1: %d", someInt)    // With Args
 
 // Use this vaitation to make check some consition and log diffrent messages
 CL_VALIDATE(expr, messageSuccess, messageFailure)
@@ -81,6 +56,31 @@ CL_ASSERT(expr, messageSuccess, messageFailure, RetVal, ...)
 void log_shutdown();
 
 ```
+
+### Formating
+Formating the LogMessages can be customised with the following tags<br>
+to format all following Log Messages use: set_Formating(char* format);<br>
+e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
+
+| Code | Description | Format/Example  |
+|------|-------------|-----------------|
+| $T   | Time        | hh:mm:ss        |
+| $H   | Time Hour   | hh              |
+| $M   | Time Min.   | mm              |
+| $S   | Time Sec.   | ss              |
+|      |             |                 |
+| $N   | Date        | yyyy:mm:dd      |
+| $Y	 | Year	      | yyyy            |
+| $O	 | Month	      | mm              |
+| $D	 | Day	      | dd              |
+|      |             |                 |
+| $L	 | LogLevel    | [TRACE], [DEBUG]|
+| $F	 | Func. Name  | main, foo       |
+| $A	 | File Name	| main.c foo.c    |
+| $B	 | Color Begin	| only on Linux   |
+| $E	 | Color End	| only on Linux   |
+| $C	 | Log message |                 |
+
 
 ### Implemented Features
 
@@ -104,22 +104,19 @@ void log_shutdown();
 1. **Multithreading:**
    - Introduce thread safety mechanisms to ensure the library works seamlessly in multithreaded environments.
 
-2. **Platform Support:**
-   - Expand the library to support multiple platforms, making it versatile for various deployment scenarios.
-
-3. **Log Rotation:**
-   - Implement log rotation to prevent log files from growing too large, with configurable options for size limits, retention, and rotation intervals.
-
-4. **Thread Safety:**
+2. **Thread Safety:**
    - Enhance the library's thread safety to prevent race conditions and ensure reliable logging in concurrent applications.
 
-5. **Integration with System Logging:**
-   - Provide integration with the system logging facility on different platforms, enhancing interoperability.
+3. **Platform Support:**
+   - Expand the library to support multiple platforms, making it versatile for various deployment scenarios.
 
-6. **Error Handling:**
+4. **Log Rotation:**
+   - Implement log rotation to prevent log files from growing too large, with configurable options for size limits, retention, and rotation intervals.
+
+5. **Error Handling:**
    - Implement robust error handling mechanisms to gracefully handle situations like log file write failures and provide informative error messages.
 
-7. **Asynchronous Logging:**
+6. **Asynchronous Logging:**
    - Introduce asynchronous logging capabilities to minimize performance impact and improve the responsiveness of your application.
 
 ## Getting Started
