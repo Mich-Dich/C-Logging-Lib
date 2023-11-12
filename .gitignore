@@ -1,3 +1,11 @@
+*.sh
+*.txt
+
+main.c
+
+.vscode/
+build/
+
 # Prerequisites
 *.d
 
