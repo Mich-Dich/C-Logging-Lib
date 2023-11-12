@@ -61,13 +61,13 @@ CS_WARN(" Your message goes here use standart formating: int: %d, string: %s", s
 CS_ERROR("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
 CS_FATAL("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
 
-// Call this to automaticly log function Starts
-CL_LOG_FUNC_START("")
-CL_LOG_FUNC_START("start param1: %d", someInt)
+// Call this to automaticly log function Starts 
+CL_LOG_FUNC_START("")                           // No Args
+CL_LOG_FUNC_START("start param1: %d", someInt)  // With Args
 
 // Call this to automaticly log the successfull End of a function
-CL_LOG_FUNC_END("")
-CL_LOG_FUNC_END("start param1: %d", someInt)
+CL_LOG_FUNC_END("")                             // No Args
+CL_LOG_FUNC_END("start param1: %d", someInt)    // With Args
 
 // Use this vaitation to make check some consition and log diffrent messages
 CL_VALIDATE(expr, messageSuccess, messageFailure)
@@ -84,8 +84,7 @@ void log_shutdown();
 
 ### Implemented Features
 
-1. **Log Levels:**
-   - TRACE, DEBUG, INFO, WARNING, ERROR, and FATAL levels are supported to give you fine-grained control over the verbosity of your logs.
+1. **Log Levels:**  | TRACE, DEBUG, INFO, WARNING, ERROR, and FATAL levels are supported to give you fine-grained control over the verbosity of your logs.
 
 2. **Log Formatting:**
    - Customize log message formats, including timestamp, log level, and other relevant information, to enhance readability and analysis.
