@@ -22,7 +22,7 @@ e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L 
 | $Y	 | Year	      | yyyy            |
 | $O	 | Month	      | mm              |
 | $D	 | Day	      | dd              |
-|      |             |                 |
+|          General                     |
 | $L	 | LogLevel    | [TRACE], [DEBUG]|
 | $F	 | Func. Name  | main, foo       |
 | $A	 | File Name	| main.c foo.c    |
