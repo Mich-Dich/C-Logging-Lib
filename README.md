@@ -10,7 +10,12 @@ Welcome to the C Logging Library repository! This library is designed to provide
 Formating the LogMessages can be customised with the following tags<br>
 to format all following Log Messages use: set_Formating(char* format);<br>
 e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
-    
+| Code | Description | Format    |
+|------|-------------|-----------|
+| $T   | Time        | hh:mm:ss  |
+| $H   | Time Hour   | hh        |
+| $M   | Time Min.   | mm        |
+| $S   | Time Sec.   | ss        |
 $T		Time		hh:mm:ss<br>
 $H		Time Hour	hh<br>
 $M		Time Min.	mm<br>
