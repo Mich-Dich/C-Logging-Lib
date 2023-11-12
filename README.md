@@ -10,6 +10,7 @@ Welcome to the C Logging Library repository! This library is designed to provide
 Formating the LogMessages can be customised with the following tags<br>
 to format all following Log Messages use: set_Formating(char* format);<br>
 e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
+
 | Code | Description | Format/Example  |
 |------|-------------|-----------------|
 | $T   | Time        | hh:mm:ss        |
@@ -21,31 +22,13 @@ e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L 
 | $Y	 | Year	      | yyyy            |
 | $O	 | Month	      | mm              |
 | $D	 | Day	      | dd              |
-|------|-------------|-----------------|
+|      |             |                 |
 | $L	 | LogLevel    | [TRACE], [DEBUG]|
 | $F	 | Func. Name  | main, foo       |
 | $A	 | File Name	| main.c foo.c    |
 | $B	 | Color Begin	| only on Linux   |
 | $E	 | Color End	| only on Linux   |
 | $C	 | Log message |                 |
-|------|-------------|-----------------|
-
-$T		Time		hh:mm:ss<br>
-$H		Time Hour	hh<br>
-$M		Time Min.	mm<br>
-$S		Time Sec.	ss<br>
-
-$N		Date		yyyy:mm:dd<br>
-$Y		Date Year	yyyy<br>
-$O		Date Month	mm<br>
-$D		Date Day	dd<br>
-
-$L		LogLevel	[TRACE], [DEBUG] . . . [FATAL]<br>
-$F		Func. Name	main, foo<br>
-$A		File Name	main.c foo.c<br>
-$B		Color Begin	from here the color starts<br>
-$E		Color End	from here the color ends<br>
-$C		Text		Formated Message with variables<br>
 
 ### Implemented Features
 
