@@ -36,10 +36,10 @@ e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L 
 ```C
 #include <logger.h>
 
-// Call this at the start of your programm
+// Call this at the start of your programm to set LogFile name and message formating
 int log_init("logfile.log", "$B[$T] $L [$F] $C$E");
 
-// You can change the message formating at runtime
+// You can change the message formating at runtime for all following messages
 void set_Formating("$B[$T] $A-$F$E $C");
 
 // You can also revert back to your previous Format
@@ -54,12 +54,12 @@ void use_Formating_Backup();
 void set_buffer_Level(2);
 
 // To log some information use one of the following macros
-CS_TRACE("Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
-CS_DEBUG("Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
-CS_INFO(" Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
-CS_WARN(" Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
-CS_ERROR("Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
-CS_FATAL("Your message goes here us standart formating: int: %d, string: %s", someInt, someString)
+CS_TRACE("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_DEBUG("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_INFO(" Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_WARN(" Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_ERROR("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_FATAL("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
 
 // Call this to automaticly log function Starts
 CL_LOG_FUNC_START("")
