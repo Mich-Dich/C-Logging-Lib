@@ -6,7 +6,7 @@
  * under the terms of the MIT license. See `logger.c` for details.
  */
 
-// This enables the verious levels of the logging function (FATAL & ERROR are always on)
+// This enables the various levels of the logging function (FATAL & ERROR are always on)
 //  0    =>   FATAL + ERROR
 //  1    =>   FATAL + ERROR + WARN
 //  2    =>   FATAL + ERROR + WARN + INFO
@@ -16,7 +16,7 @@
 
 #define FUNCTION_NAME_STRING __func__
 #define FILE_NAME_STRING __FILE__
-#define MAX_MEASSGE_SIZE 2048
+#define MAX_MESSAGE_SIZE 2048
 #define MAX_BUFFERED_MESSAGES 10
 
 enum log_level {
@@ -36,9 +36,9 @@ void log_shutdown();
 
 void log_output(enum log_level level, const char* message, const char* funcName, const char* fileName, ...);
 
-/*  Formating the LogMessages can be customised with the following tags
-    to format all following Log Messages use: set_Formating(char* format);
-    e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
+/*  Formatting the LogMessages can be customised with the following tags
+    to format all following Log Messages use: set_Formatting(char* format);
+    e.g. set_Formatting("$B[$T] $L [$F]  $C$E")  or set_Formatting("$BTime:[$M $S] $L $E ==> $C")
     
 $T		Time		hh:mm:ss
 $H		Time Hour	hh
@@ -55,9 +55,9 @@ $F		Func. Name	main, foo
 $A		File Name	main.c foo.c
 $B		Color Begin	from here the color starts
 $E		Color End	from here the color ends
-$C		Text		Formated Message with variables*/
-void set_Formating(char* format);
-void use_Formating_Backup();
+$C		Text		Formatted Message with variables*/
+void set_Formatting(char* format);
+void use_Formatting_Backup();
 
 // Define witch log levels should be written to log file directly and witch should be buffered
 //  0    =>   write all logs directly to log file
@@ -93,7 +93,7 @@ const char* append_prefix(const char* prefix, const char* message);
 #if LOG_LEVEL_ENABLED >= 2
     #define CL_INFO(message, ...)                   log_output(LL_INFO, message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
 
-    // Logs the end of a function, it would be helpfull to has the '$F' in your format
+    // Logs the end of a function, it would be helpful to has the '$F' in your format
     #define CL_LOG_FUNC_END(message, ...)           CL_INFO(append_prefix("%s ", message), "END ", ##__VA_ARGS__)
 #else
     // Disabled by LogLevel
@@ -110,21 +110,21 @@ const char* append_prefix(const char* prefix, const char* message);
     #define CL_DEBUG(message, ...) ;
 #endif
 
-// define conditional log macro for REACE
+// define conditional log macro for RACE
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_TRACE(message, ...)                  log_output(LL_TRACE, message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
 
     // Logs the start of a function, it would be helpfull to has the '$F' in your format
     #define CL_LOG_FUNC_START(message, ...)         CL_TRACE(append_prefix("%s ", message), "START ", ##__VA_ARGS__)
 
-    // Insert a seperatioon line in Logoutput (-------)
-    #define CL_SEPERATOR()                                                                                                  \
+    // Insert a separation line in Logoutput (-------)
+    #define CL_SEPARATOR()                                                                                                  \
         set_Formating("$C");                                                                                                \
         CL_TRACE("-------------------------------------------------------------------------------------------------------") \
         use_Formating_Backup();
 
-    // Insert a seperatioon line in Logoutput (=======)
-    #define CL_SEPERATOR_BIG()                                                                                              \
+    // Insert a separation line in Logoutput (=======)
+    #define CL_SEPARATOR_BIG()                                                                                              \
         set_Formating("$C");                                                                                                \
         CL_TRACE("=======================================================================================================") \
         use_Formating_Backup();
@@ -134,8 +134,8 @@ const char* append_prefix(const char* prefix, const char* message);
     // Disabled by LogLevel
     #define CL_LOG_FUNC_START(message, ...)
     // Disabled by LogLevel
-    #define CL_SEPERATOR()
-    #define CL_SEPERATOR_BIG()
+    #define CL_SEPARATOR()
+    #define CL_SEPARATOR_BIG()
 #endif
 
 // ------------------------------------------------------------ VALIDATION / ASSERTION ------------------------------------------------------------
