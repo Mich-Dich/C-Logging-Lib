@@ -62,25 +62,26 @@ Formating the LogMessages can be customised with the following tags<br>
 to format all following Log Messages use: set_Formating(char* format);<br>
 e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
 
-| Code | Description | Format/Example  |
-|------|-------------|-----------------|
-| $T   | Time        | hh:mm:ss        |
-| $H   | Time Hour   | hh              |
-| $M   | Time Min.   | mm              |
-| $S   | Time Sec.   | ss              |
-|      |             |                 |
-| $N   | Date        | yyyy:mm:dd      |
-| $Y	 | Year	      | yyyy            |
-| $O	 | Month	      | mm              |
-| $D	 | Day	      | dd              |
-|      |             |                 |
-| $L	 | LogLevel    | [TRACE], [DEBUG]|
-| $F	 | Func. Name  | main, foo       |
-| $A	 | File Name	| main.c foo.c    |
-| $B	 | Color Begin	| only on Linux   |
-| $E	 | Color End	| only on Linux   |
-| $C	 | Log message |                 |
-
+| Code | Description | Format/Example                    |
+|------|-------------|-----------------------------------|
+| $T   | Time        | hh:mm:ss                          |
+| $H   | Time Hour   | hh                                |
+| $M   | Time Min.   | mm                                |
+| $S   | Time Sec.   | ss                                |
+|      |             |                                   |
+| $N   | Date        | yyyy:mm:dd                        |
+| $Y	 | Year	      | yyyy                              |
+| $O	 | Month	      | mm                                |
+| $D	 | Day	      | dd                                |
+|      |             |                                   |
+| $L	 | LogLevel    | TRACE, DEBUG … FATAL              |
+| $X	 | LogLevel    | add " " if logLevel INFO or DEBUG |
+| $F	 | Func. Name  | main, foo                         |
+| $A	 | File Name	| main.c foo.c                      |
+| $B	 | Color Begin	| from here the color starts        |
+| $E	 | Color End	| from here the color ends          |
+| $C	 | Log message | Formated Message with variables   |
+| $Z   | new Line    | Add a Line Break To your message  |
 
 ### Implemented Features
 
