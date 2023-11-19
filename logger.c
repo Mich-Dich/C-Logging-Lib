@@ -262,14 +262,6 @@ void output_Messsage(enum log_level level, const char* message, const char* mess
     pthread_mutex_unlock(&LogLock); 
 }
 
-void print_Seperator(enum log_level level, int big) {
-
-    set_Formating("$C");
-    const char* loc_Sperator = big ? seperator : seperator_Big;
-    log_output(level, "", loc_Sperator, "", "");
-    use_Formating_Backup();
-}
-
 //
 void WriteMessagesToFile() {
 
@@ -334,4 +326,13 @@ void set_buffer_Level(int newLevel) {
         CL_ERROR("Input invalid Level (0 <= newLevel <= 4), input: %d", newLevel)
         return;
     }
+}
+
+//
+void print_Seperator(enum log_level level, int big) {
+
+    set_Formating("$C$Z");
+    const char* loc_Sperator = big ? seperator_Big : seperator;
+    log_output(level, "", "", "", loc_Sperator);
+    use_Formating_Backup();
 }
