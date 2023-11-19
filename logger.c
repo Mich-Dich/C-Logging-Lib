@@ -4,6 +4,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <libgen.h>
+#include <stdlib.h>
 
 #include "logger.h"
 
@@ -23,6 +24,8 @@ typedef struct MessageBuffer{
 // FATAL,ERROR,WARN,INFO,DEBUG,TRACE
 static const char* colour_strings[6] = {"0;41", "1;31", "1;33", "1;32", "1;34", "1;0"};
 static const char* level_str[6] = {"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
+static const char* seperator = "-------------------------------------------------------------------------------------------------------";
+static const char* seperator_Big = "=======================================================================================================";
 static FILE* logFile;
 
 static pthread_mutex_t LogLock = PTHREAD_MUTEX_INITIALIZER;
@@ -34,7 +37,7 @@ static MessageBuffer Log_Message_Buffer = { .count = 0 };
 
 // local Functions
 struct tm getLocalTime(void);
-void output_Messsage(enum log_level level, char* message, const char* message_log);
+void output_Messsage(enum log_level level, const char* message, const char* message_log);
 //void Format_Messages(char* out_mes, char* log_mes, const char* format, ...);
 void WriteMessagesToFile();
 
@@ -61,14 +64,25 @@ int log_init(char* LogFileName, char* LogFormat) {
         if (LOG_LEVEL_ENABLED <= 4 || LOG_LEVEL_ENABLED >= 0) {
 
             static const char* loc_level_str[6] = {"FATAL", " + ERROR", " + WARN", " + INFO", " + DEBUG", " + TRACE"};
-            char* LogLevelText[100];
-            memset(LogLevelText, 0, sizeof(LogLevelText));
+            char* LogLevelText = NULL;
 
+            size_t LevelText_len = 1;
+            for (int x = 0; x < LOG_LEVEL_ENABLED + 2; ) {
+                LevelText_len += strlen(loc_level_str[x]);
+            }
+
+            LogLevelText = malloc(LevelText_len);
+            if (LogLevelText == NULL) {
+                fprintf(logFile, "FAILED to allocate memmory to print enabled LogLevels");
+                return -1;
+            }
+            
+            LogLevelText[0] = '\0';
             for (int x = 0; x < LOG_LEVEL_ENABLED + 2; x++) {
                 strcat(LogLevelText, loc_level_str[x]);
             }
             fprintf(logFile, "    LOG_LEVEL_ENABLED = %d    enabled log macros are: %s\n", LOG_LEVEL_ENABLED, LogLevelText);
-
+            free(LogLevelText);
         }
         fprintf(logFile, "%s\n", seperator_Big);
         fclose(logFile);
@@ -87,7 +101,7 @@ void log_shutdown(){
 
 // Outout a message to the standart output stream and a log file
 // !! CAUTION !! - do NOT make logs messages longer than [MAX_MEASSGE_SIZE] characters
-void log_output(enum log_level level, const char* prefix, const char* message, const char* funcName, const char* fileName, ...) {
+void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, const char* message, ...) {
 
     // check if message empty
     if (message[0] == '\0' && prefix[0] == '\0')
@@ -192,7 +206,7 @@ void log_output(enum log_level level, const char* prefix, const char* message, c
             
             // Year
             case 'Y':
-                LOGGER_FORMAT_FORMAT_MESSAGE("%s", locTime.tm_year + 1900)
+                LOGGER_FORMAT_FORMAT_MESSAGE("%d", locTime.tm_year + 1900)
             break;
             
             // Month
@@ -223,14 +237,14 @@ void log_output(enum log_level level, const char* prefix, const char* message, c
     
     //Format_Messages(message_out, message_log, "\n");
     //LOGGER_FORMAT_FORMAT_MESSAGE("\n")
-    output_Messsage(level, message_out, message_log);
+    output_Messsage(level, (const char*)message_out, message_log);
 }
 
 //
-void output_Messsage(enum log_level level, char* message, const char* message_log) {
+void output_Messsage(enum log_level level, const char* message, const char* message_log) {
     
     // Print Message to standart output
-    printf(message);
+    printf("%s", message);
 
     pthread_mutex_lock(&LogLock);
     // Save message in Buffer
@@ -239,13 +253,21 @@ void output_Messsage(enum log_level level, char* message, const char* message_lo
     Log_Message_Buffer.count++;
 
     // Check if buffer full OR important message
-    if (Log_Message_Buffer.count >= (MAX_BUFFERED_MESSAGES -1) || level < (6 - log_level_for_buffer)) {
+    if (Log_Message_Buffer.count >= (MAX_BUFFERED_MESSAGES -1) || level < (6 - (unsigned int)log_level_for_buffer)) {
         
         WriteMessagesToFile();
         Log_Message_Buffer.count = 0;
     }
     
     pthread_mutex_unlock(&LogLock); 
+}
+
+void print_Seperator(enum log_level level, int big) {
+
+    set_Formating("$C");
+    const char* loc_Sperator = big ? seperator : seperator_Big;
+    log_output(level, "", loc_Sperator, "", "");
+    use_Formating_Backup();
 }
 
 //

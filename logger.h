@@ -6,7 +6,7 @@
 //  2    =>   FATAL + ERROR + WARN + INFO
 //  3    =>   FATAL + ERROR + WARN + INFO + DEBUG
 //  4    =>   FATAL + ERROR + WARN + INFO + DEBUG + TRACE
-#define LOG_LEVEL_ENABLED 4
+#define LOG_LEVEL_ENABLED 0
 
 #define FUNCTION_NAME_STRING __func__
 #define FILE_NAME_STRING __FILE__
@@ -37,32 +37,30 @@ enum log_level {
 //  Save FileName and LogFormat && Reset LogFile
 int log_init(char* LogFileName, char* LogFormat);
 void log_shutdown();
-void log_output(enum log_level level, const char* prefix, const char* message, const char* funcName, const char* fileName, ...);
+void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, const char* message, ...);
+void print_Seperator(enum log_level level, int big);
 
 /*  Formating the LogMessages can be customised with the following tags
     to format all following Log Messages use: set_Formating(char* format);
     e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
     
-| Code  | Description   | Format/Example                    |
-|-------|---------------|-----------------------------------|
-| $T    | Time          | hh:mm:ss                          |
-| $H    | Time Hour     | hh                                |
-| $M    | Time Min.     | mm                                |
-| $S    | Time Sec.     | ss                                |
-|       |               |                                   |
-| $N    | Date          | yyyy:mm:dd                        |
-| $Y    | Year	        | yyyy                              |
-| $O	| Month	        | mm                                |
-| $D	| Day	        | dd                                |
-|       |               |                                   |
-| $L	| LogLevel      | TRACE, DEBUG … FATAL              |
-| $X	| LogLevel      | add " " if logLevel INFO or DEBUG |
-| $F	| Func. Name    | main, foo                         |
-| $A	| File Name	    | main.c foo.c                      |
-| $B	| Color Begin   | from here the color starts        |
-| $E	| Color End	    | from here the color ends          |
-| $C	| Log message   | Formated Message with variables   |
-| $Z    | new Line      | Add a Line Break To your message  |*/
+$T		Time		hh:mm:ss
+$H		Time Hour	hh
+$M		Time Min.	mm
+$S		Time Sec.	ss
+
+$N		Date		yyyy:mm:dd:
+$Y		Date Year	yyyy
+$O		Date Month	mm
+$D		Date Day	dd
+
+$L		LogLevel	[TRACE], [DEBUG] … [FATAL]
+$F		Func. Name	main, foo
+$A		File Name	main.c foo.c
+$B		Color Begin	from here the color starts
+$E		Color End	from here the color ends
+$C		Text		Formated Message with variables
+$Z      new Line    Add a Line Break To your message*/
 void set_Formating(char* format);
 void use_Formating_Backup();
 
@@ -74,78 +72,66 @@ void use_Formating_Backup();
 //  4    =>   buffer: TRACE + DEBUG + INFO + WARN
 void set_buffer_Level();
 
-static const char* seperator = "-------------------------------------------------------------------------------------------------------";
-static const char* seperator_Big = "=======================================================================================================";
-
-
 
 // ------------------------------------------------------------ LOGGING ------------------------------------------------------------
 // log macro for FATAL
 #ifndef CL_FATAL
-    #define CL_FATAL(message, ...)                  log_output(LL_FATAL, "", message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
+    #define CL_FATAL(message, ...)                  log_output(LL_FATAL, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, message, ##__VA_ARGS__);
 #endif
 
 // log macro for ERRORS
 #ifndef CL_ERROR
-    #define CL_ERROR(message, ...)                  log_output(LL_ERROR, "", message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
+    #define CL_ERROR(message, ...)                  log_output(LL_ERROR, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, message, ##__VA_ARGS__);
 #endif
 
 // define conditional log macro for WARNINGS
 #if LOG_LEVEL_ENABLED >= 1
-    #define CL_WARNING(message, ...)                log_output(LL_WARN, "", message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
+    #define CL_WARNING(message, ...)                log_output(LL_WARN, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, message, ##__VA_ARGS__);
 #else
     // Disabled by LogLevel
-    #define CL_WARN(message, ...)
+    #define CL_WARNING(message, ...)                {;}
 #endif
 
 // define conditional log macro for INFO
 #if LOG_LEVEL_ENABLED >= 2
-    #define CL_INFO(message, ...)                   log_output(LL_INFO, "", message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
-
-    // Logs the end of a function, it would be helpfull to has the '$F' in your format    
-    #define CL_LOG_FUNC_END(message, ...)           log_output(LL_INFO, "END ", message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
+    #define CL_INFO(message, ...)                   log_output(LL_INFO, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, message, ##__VA_ARGS__);
                  
 #else
     // Disabled by LogLevel
-    #define CL_INFO(message, ...) ;
-    // Disabled by LogLevel
-    #define CL_LOG_FUNC_END(message, ...)
+    #define CL_INFO(message, ...)                   {;}
 #endif
 
 // define conditional log macro for DEBUG
 #if LOG_LEVEL_ENABLED >= 3
-    #define CL_DEBUG(message, ...)                  log_output(LL_DEBUG, "", message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
+    #define CL_DEBUG(message, ...)                  log_output(LL_DEBUG, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, message, ##__VA_ARGS__);
+
+    // Logs the end of a function, it would be helpfull to has the '$F' in your format    
+    #define CL_LOG_FUNC_END(message, ...)           log_output(LL_DEBUG, "END ", FUNCTION_NAME_STRING, FILE_NAME_STRING, message, ##__VA_ARGS__);
+
+    // Logs the start of a function, it would be helpfull to has the '$F' in your format
+    #define CL_LOG_FUNC_START(message, ...)         log_output(LL_DEBUG, "START ", FUNCTION_NAME_STRING, FILE_NAME_STRING, message, ##__VA_ARGS__);
 #else
     // Disabled by LogLevel
-    #define CL_DEBUG(message, ...) ;
+    #define CL_DEBUG(message, ...)                  {;}
+    // Disabled by LogLevel
+    #define CL_LOG_FUNC_END(message, ...)           {;}
+    // Disabled by LogLevel
+    #define CL_LOG_FUNC_START(message, ...)         {;}
 #endif
 
 // define conditional log macro for REACE
 #if LOG_LEVEL_ENABLED >= 4
-    #define CL_TRACE(message, ...)                  log_output(LL_TRACE, "", message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
-
-    // Logs the start of a function, it would be helpfull to has the '$F' in your format
-    #define CL_LOG_FUNC_START(message, ...)         log_output(LL_INFO, "START ", message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
-
+    #define CL_TRACE(message, ...)                  log_output(LL_TRACE, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, message, ##__VA_ARGS__);
     // Insert a seperatioon line in Logoutput (-------)
-    #define CL_SEPERATOR()                                                              \
-        set_Formating("$C$Z");                                                          \
-        CL_TRACE(seperator)                                                             \
-        use_Formating_Backup();
-
+    #define CL_SEPERATOR()                          print_Seperator(LL_TRACE, 0);
     // Insert a seperatioon line in Logoutput (=======)
-    #define CL_SEPERATOR_BIG()                                                          \
-        set_Formating("$C$Z");                                                          \
-        CL_TRACE(seperator_Big)                                                         \
-        use_Formating_Backup();
+    #define CL_SEPERATOR_BIG()                      print_Seperator(LL_TRACE, 1);
 #else
     // Disabled by LogLevel
     #define CL_TRACE(message, ...) ;
     // Disabled by LogLevel
-    #define CL_LOG_FUNC_START(message, ...)
-    // Disabled by LogLevel
-    #define CL_SEPERATOR()
-    #define CL_SEPERATOR_BIG()
+    #define CL_SEPERATOR()                          {;}
+    #define CL_SEPERATOR_BIG()                      {;}
 #endif
 
 // ------------------------------------------------------------ VALIDATION / ASSERTION ------------------------------------------------------------
@@ -164,3 +150,4 @@ static const char* seperator_Big = "============================================
             CL_FATAL(messageFailure, ##__VA_ARGS__)                                     \
             MY_DEBUG_BREAK();                                                           \
         }
+
