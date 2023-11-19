@@ -6,7 +6,7 @@
 //  2    =>   FATAL + ERROR + WARN + INFO
 //  3    =>   FATAL + ERROR + WARN + INFO + DEBUG
 //  4    =>   FATAL + ERROR + WARN + INFO + DEBUG + TRACE
-#define LOG_LEVEL_ENABLED 0
+#define LOG_LEVEL_ENABLED 4
 
 #define FUNCTION_NAME_STRING __func__
 #define FILE_NAME_STRING __FILE__

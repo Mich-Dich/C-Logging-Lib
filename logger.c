@@ -64,16 +64,16 @@ int log_init(char* LogFileName, char* LogFormat) {
         if (LOG_LEVEL_ENABLED <= 4 || LOG_LEVEL_ENABLED >= 0) {
 
             static const char* loc_level_str[6] = {"FATAL", " + ERROR", " + WARN", " + INFO", " + DEBUG", " + TRACE"};
-            char* LogLevelText = NULL;
-
+            
             size_t LevelText_len = 1;
-            for (int x = 0; x < LOG_LEVEL_ENABLED + 2; ) {
+            for (int x = 0; x < LOG_LEVEL_ENABLED + 2; x++) {
                 LevelText_len += strlen(loc_level_str[x]);
             }
 
-            LogLevelText = malloc(LevelText_len);
+            char* LogLevelText = malloc(LevelText_len);
             if (LogLevelText == NULL) {
-                fprintf(logFile, "FAILED to allocate memmory to print enabled LogLevels");
+                
+                printf("FAILED to allocate memmory to print enabled LogLevels");
                 return -1;
             }
             
