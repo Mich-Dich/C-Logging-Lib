@@ -78,7 +78,7 @@ int log_init(char *LogFileName, char *LogFormat) {
     else {
 
         fprintf(logFile,
-                "[%04d/%02d/%02d - %02d:%02d:%02d] Log initalized\n    Output-file: [%s]\n    Starting-format: %s\n",
+                "[%04d/%02d/%02d - %02d:%02d:%02d] Log initialized\n    Output-file: [%s]\n    Starting-format: %s\n",
                 tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, TargetFileName,
                 TargetLogFormat);
 
@@ -104,7 +104,7 @@ int log_init(char *LogFileName, char *LogFormat) {
     return 1;
 }
 
-// write bufferd messages to file and clean up output stream
+// write buffered messages to file and clean up output stream
 void log_shutdown() {
 
     CL_TRACE("Shutdown")
@@ -126,15 +126,15 @@ void log_output(enum log_level level, const char *message, const char *funcName,
     memset(message_out, 0, sizeof(message_out));
     char message_log[MAX_MESSAGE_SIZE];
     memset(message_log, 0, sizeof(message_log));
-    char message_formated[MAX_MESSAGE_SIZE];
-    memset(message_formated, 0, sizeof(message_formated));
+    char message_formatted[MAX_MESSAGE_SIZE];
+    memset(message_formatted, 0, sizeof(message_formatted));
     char Format_Command[2] = "0\0";
     char Format_Buffer[MAX_MESSAGE_SIZE];
 
     // write all arguments in to [message_formatted]
     __builtin_va_list args_ptr;
     va_start(args_ptr, message);
-    vsnprintf(message_formated, MAX_MESSAGE_SIZE, message, args_ptr);
+    vsnprintf(message_formatted, MAX_MESSAGE_SIZE, message, args_ptr);
     va_end(args_ptr);
 
 
@@ -162,7 +162,7 @@ void log_output(enum log_level level, const char *message, const char *funcName,
 
                     // input text (message)
                 case 'C':
-                    Format_Messages(message_out, message_log, "%s", message_formated);
+                    Format_Messages(message_out, message_log, "%s", message_formatted);
                     break;
 
                     // Log Level
@@ -290,7 +290,7 @@ void set_Formatting(char *LogFormat) {
     TargetLogFormat = LogFormat;
 }
 
-// Settis the Bckup version of Format to be used as Main Format
+// Sets the Backup version of Format to be used as Main Format
 void use_Formatting_Backup() {
 
     TargetLogFormat = TargetLogFormat_BACKUP;

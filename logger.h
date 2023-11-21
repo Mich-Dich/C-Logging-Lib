@@ -114,7 +114,7 @@ const char* append_prefix(const char* prefix, const char* message);
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_TRACE(message, ...)                  log_output(LL_TRACE, message, FUNCTION_NAME_STRING, FILE_NAME_STRING, ##__VA_ARGS__);
 
-    // Logs the start of a function, it would be helpfull to has the '$F' in your format
+    // Logs the start of a function, it would be helpful to have '$F' in your format
     #define CL_LOG_FUNC_START(message, ...)         CL_TRACE(append_prefix("%s ", message), "START ", ##__VA_ARGS__)
 
     // Insert a separation line in Logoutput (-------)
