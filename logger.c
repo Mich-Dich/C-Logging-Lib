@@ -10,7 +10,6 @@
 
 #define LOGGER_FORMAT_FORMAT_MESSAGE(format, ...)               sprintf(Format_Buffer, format, ##__VA_ARGS__);              \
                                                                 strcat(message_out, Format_Buffer);                         \
-                                                                strcat(message_log, Format_Buffer);
 
 
 typedef struct MessageBuffer{
@@ -22,7 +21,8 @@ typedef struct MessageBuffer{
 
 
 // FATAL,ERROR,WARN,INFO,DEBUG,TRACE
-static const char* colour_strings[6] = {"0;41", "1;31", "1;33", "1;32", "1;34", "1;0"};
+static const char* Console_Colour_Strings[6] = {"\x1b[1;41m", "\x1b[1;31m", "\x1b[1;93m", "\x1b[1;32m", "\x1b[1;94m", "\x1b[0;37m"};
+static const char* Console_Colour_Reset = "\x1b[0;39m";
 static const char* level_str[6] = {"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
 static const char* seperator = "-------------------------------------------------------------------------------------------------------";
 static const char* seperator_Big = "=======================================================================================================";
@@ -30,14 +30,14 @@ static FILE* logFile;
 
 static pthread_mutex_t LogLock = PTHREAD_MUTEX_INITIALIZER;
 static char* TargetFileName = "unknown.txt";
-static char* TargetLogFormat = "$S[$N] §M$E";
-static char* TargetLogFormat_BACKUP = "$S[$N] §M$E";
+static char* TargetLogFormat = "$S[$N] $M$E";
+static char* TargetLogFormat_BACKUP = "$S[$N] $M$E";
 static int log_level_for_buffer = 3;
 static MessageBuffer Log_Message_Buffer = { .count = 0 };
 
 // local Functions
 struct tm getLocalTime(void);
-void output_Messsage(enum log_level level, const char* message, const char* message_log);
+void output_Messsage(enum log_level level, const char* message);
 //void Format_Messages(char* out_mes, char* log_mes, const char* format, ...);
 void WriteMessagesToFile();
 
@@ -52,7 +52,7 @@ int log_init(char* LogFileName, char* LogFormat) {
     logFile = fopen(TargetFileName, "w");
     if (logFile == NULL) {
 
-        CL_ERROR("Error opening log file");
+        CL_LOG(Error, "Error opening log file");
         return -1;
     }
     
@@ -88,20 +88,20 @@ int log_init(char* LogFileName, char* LogFormat) {
         fclose(logFile);
     }    
     
-    CL_TRACE("Initialize")
+     CL_LOG(Trace, "Initialize")
     return 0;
 }
 
 // write bufferd messages to file and clean up output stream
 void log_shutdown(){
 
-    CL_TRACE("Shutdown")
+     CL_LOG(Trace, "Shutdown")
     WriteMessagesToFile();
 }
 
 // Outout a message to the standart output stream and a log file
 // !! CAUTION !! - do NOT make logs messages longer than [MAX_MEASSGE_SIZE] characters
-void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, const char* message, ...) {
+void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, const char* message, ...) {
 
     // check if message empty
     if (message[0] == '\0' && prefix[0] == '\0')
@@ -111,9 +111,9 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
 
     // Create Buffer Srings
     char message_out[MAX_MEASSGE_SIZE];
-        memset(message_out, 0, sizeof(message_out));
+        memset(message_out, 0, sizeof(message_out));/*
     char message_log[MAX_MEASSGE_SIZE];
-        memset(message_log, 0, sizeof(message_log));
+        memset(message_log, 0, sizeof(message_log));*/
     char message_formated[MAX_MEASSGE_SIZE];
         memset(message_formated, 0, sizeof(message_formated));
     char Format_Command[2] = "0\0";
@@ -138,16 +138,14 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
             // ------------------------------------  Basic Info  -------------------------------------------------------------------------------
             // Color Start
             case 'B':
-                sprintf(Format_Buffer, "\033[%sm", colour_strings[level]);
-                strncat(message_out, Format_Buffer, 7 + sizeof(colour_strings[level]));
-                break;
+                LOGGER_FORMAT_FORMAT_MESSAGE("%s", Console_Colour_Strings[level]);
+            break;
             
             // Color End
-            case 'E':
-                sprintf(Format_Buffer, "\033[0m");
-                strncat(message_out, Format_Buffer, 7);
-                break;
-
+            case 'E': 
+                LOGGER_FORMAT_FORMAT_MESSAGE("%s", Console_Colour_Reset);
+            break;
+            
             // input text (message)
             case 'C':
                 LOGGER_FORMAT_FORMAT_MESSAGE("%s%s", prefix, message_formated)
@@ -164,7 +162,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
 
             // Log Level
             case 'X':
-                if (level == LL_INFO || level == LL_WARN)       { LOGGER_FORMAT_FORMAT_MESSAGE(" ") }                    
+                if (level == Info || level == Warn)       { LOGGER_FORMAT_FORMAT_MESSAGE(" ") }                    
             break;
             
             // Function Name
@@ -175,6 +173,11 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
             // File Name
             case 'A':
                 LOGGER_FORMAT_FORMAT_MESSAGE("%s", basename(fileName))
+            break;
+            
+            // Line
+            case 'G':
+                LOGGER_FORMAT_FORMAT_MESSAGE("%d", Line)
             break;
 
             // ------------------------------------  Time  -------------------------------------------------------------------------------
@@ -231,24 +234,24 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
         else {
 
             strncat(message_out, &TargetLogFormat[x], 1);
-            strncat(message_log, &TargetLogFormat[x], 1);
+            //strncat(message_log, &TargetLogFormat[x], 1);
         }
     }
     
     //Format_Messages(message_out, message_log, "\n");
     //LOGGER_FORMAT_FORMAT_MESSAGE("\n")
-    output_Messsage(level, (const char*)message_out, message_log);
+    output_Messsage(level, (const char*)message_out);
 }
 
 //
-void output_Messsage(enum log_level level, const char* message, const char* message_log) {
+void output_Messsage(enum log_level level, const char* message) {
     
     // Print Message to standart output
     printf("%s", message);
 
     pthread_mutex_lock(&LogLock);
     // Save message in Buffer
-    strncpy(Log_Message_Buffer.messages[Log_Message_Buffer.count], message_log, sizeof(Log_Message_Buffer.messages[0]) + 1);
+    strncpy(Log_Message_Buffer.messages[Log_Message_Buffer.count], message, sizeof(Log_Message_Buffer.messages[0]) + 1);
     Log_Message_Buffer.messages[Log_Message_Buffer.count][sizeof(Log_Message_Buffer.messages[0]) - 1] = '\0'; // Null-terminate
     Log_Message_Buffer.count++;
 
@@ -273,9 +276,9 @@ void WriteMessagesToFile() {
     }
 
     // Write each buffered message to the file
-    for (int i = 0; i < Log_Message_Buffer.count; ++i) {
-        fprintf(file, "%s", Log_Message_Buffer.messages[i]);
-    }
+    for (int i = 0; i < Log_Message_Buffer.count; ++i) 
+        fputs(Log_Message_Buffer.messages[i], file);
+    
 
     // Close the file
     fclose(file);
@@ -323,7 +326,7 @@ void set_buffer_Level(int newLevel) {
         log_level_for_buffer = newLevel;
 
     else {
-        CL_ERROR("Input invalid Level (0 <= newLevel <= 4), input: %d", newLevel)
+        CL_LOG(Error, "Input invalid Level (0 <= newLevel <= 4), input: %d", newLevel)
         return;
     }
 }
@@ -333,6 +336,6 @@ void print_Seperator(enum log_level level, int big) {
 
     set_Formating("$C$Z");
     const char* loc_Sperator = big ? seperator_Big : seperator;
-    log_output(level, "", "", "", loc_Sperator);
+    log_output(level, "", "", "", 0, loc_Sperator);
     use_Formating_Backup();
 }
