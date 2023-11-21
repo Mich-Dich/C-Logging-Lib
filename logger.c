@@ -24,8 +24,8 @@ typedef struct MessageBuffer{
 static const char* Console_Colour_Strings[6] = {"\x1b[1;41m", "\x1b[1;31m", "\x1b[1;93m", "\x1b[1;32m", "\x1b[1;94m", "\x1b[0;37m"};
 static const char* Console_Colour_Reset = "\x1b[0;39m";
 static const char* level_str[6] = {"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
-static const char* seperator = "-------------------------------------------------------------------------------------------------------";
-static const char* seperator_Big = "=======================================================================================================";
+static const char* separator = "-------------------------------------------------------------------------------------------------------";
+static const char* separator_Big = "=======================================================================================================";
 static FILE* logFile;
 
 static pthread_mutex_t LogLock = PTHREAD_MUTEX_INITIALIZER;
@@ -59,7 +59,7 @@ int log_init(char* LogFileName, char* LogFormat) {
     // print title section to start of file
     else {
 
-        fprintf(logFile, "[%04d/%02d/%02d - %02d:%02d:%02d] Log initalized\n    Output-file: [%s]\n    Starting-format: %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, TargetFileName, TargetLogFormat);
+        fprintf(logFile, "[%04d/%02d/%02d - %02d:%02d:%02d] Log initialized\n    Output-file: [%s]\n    Starting-format: %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, TargetFileName, TargetLogFormat);
 
         if (LOG_LEVEL_ENABLED <= 4 || LOG_LEVEL_ENABLED >= 0) {
 
@@ -73,7 +73,7 @@ int log_init(char* LogFileName, char* LogFormat) {
             char* LogLevelText = malloc(LevelText_len);
             if (LogLevelText == NULL) {
                 
-                printf("FAILED to allocate memmory to print enabled LogLevels");
+                printf("FAILED to allocate memory to print enabled LogLevels");
                 return -1;
             }
             
@@ -84,7 +84,7 @@ int log_init(char* LogFileName, char* LogFormat) {
             fprintf(logFile, "    LOG_LEVEL_ENABLED = %d    enabled log macros are: %s\n", LOG_LEVEL_ENABLED, LogLevelText);
             free(LogLevelText);
         }
-        fprintf(logFile, "%s\n", seperator_Big);
+        fprintf(logFile, "%s\n", separator_Big);
         fclose(logFile);
     }    
     
@@ -92,15 +92,15 @@ int log_init(char* LogFileName, char* LogFormat) {
     return 0;
 }
 
-// write bufferd messages to file and clean up output stream
+// write buffered messages to file and clean up output stream
 void log_shutdown(){
 
      CL_LOG(Trace, "Shutdown")
     WriteMessagesToFile();
 }
 
-// Outout a message to the standart output stream and a log file
-// !! CAUTION !! - do NOT make logs messages longer than [MAX_MEASSGE_SIZE] characters
+// Output a message to the standard output stream and a log file
+// !! CAUTION !! - do NOT make logs messages longer than [MAX_MESSAGE_SIZE] characters
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, const char* message, ...) {
 
     // check if message empty
@@ -109,20 +109,20 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
 
     struct tm locTime = getLocalTime();
 
-    // Create Buffer Srings
+    // Create Buffer Strings
     char message_out[MAX_MEASSGE_SIZE];
         memset(message_out, 0, sizeof(message_out));/*
-    char message_log[MAX_MEASSGE_SIZE];
+    char message_log[MAX_MESSAGE_SIZE];
         memset(message_log, 0, sizeof(message_log));*/
-    char message_formated[MAX_MEASSGE_SIZE];
-        memset(message_formated, 0, sizeof(message_formated));
+    char message_formatted[MAX_MEASSGE_SIZE];
+        memset(message_formatted, 0, sizeof(message_formatted));
     char Format_Command[2] = "0\0";
     char Format_Buffer[MAX_MEASSGE_SIZE];
 
-    // write all arguments in to [message_formated]
+    // write all arguments in to [message_formatted]
     __builtin_va_list args_ptr;
     va_start(args_ptr, message);
-        vsnprintf(message_formated, MAX_MEASSGE_SIZE, message, args_ptr);
+        vsnprintf(message_formatted, MAX_MEASSGE_SIZE, message, args_ptr);
     va_end(args_ptr);
 
 
@@ -148,7 +148,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
             
             // input text (message)
             case 'C':
-                LOGGER_FORMAT_FORMAT_MESSAGE("%s%s", prefix, message_formated)
+                LOGGER_FORMAT_FORMAT_MESSAGE("%s%s", prefix, message_formatted)
             break;
 
             // Log Level
@@ -246,7 +246,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
 //
 void output_Messsage(enum log_level level, const char* message) {
     
-    // Print Message to standart output
+    // Print Message to standard output
     printf("%s", message);
 
     pthread_mutex_lock(&LogLock);
@@ -285,14 +285,14 @@ void WriteMessagesToFile() {
 }
 
 // Change Format of log messages and backup previous Format
-void set_Formating(char* LogFormat) {
+void set_Formatting(char* LogFormat) {
 
     TargetLogFormat_BACKUP = TargetLogFormat;
     TargetLogFormat = LogFormat;
 }
 
-// Settis the Bckup version of Format to be used as Main Format
-void use_Formating_Backup() {
+// Sets the Backup version of Format to be used as Main Format
+void use_Formatting_Backup() {
 
     TargetLogFormat = TargetLogFormat_BACKUP;
 }
@@ -332,10 +332,10 @@ void set_buffer_Level(int newLevel) {
 }
 
 //
-void print_Seperator(enum log_level level, int big) {
+void print_Separator(enum log_level level, int big) {
 
-    set_Formating("$C$Z");
-    const char* loc_Sperator = big ? seperator_Big : seperator;
-    log_output(level, "", "", "", 0, loc_Sperator);
-    use_Formating_Backup();
+    set_Formatting("$C$Z");
+    const char* log_Separator = big ? separator_Big : separator;
+    log_output(level, "", "", "", 0, log_Separator);
+    use_Formatting_Backup();
 }

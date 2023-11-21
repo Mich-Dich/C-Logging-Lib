@@ -1,6 +1,6 @@
 #pragma once
 
-// This enables the verious levels of the logging function (FATAL & ERROR are always on)
+// This enables the various levels of the logging function (FATAL & ERROR are always on)
 //  0    =>   FATAL + ERROR
 //  1    =>   FATAL + ERROR + WARN
 //  2    =>   FATAL + ERROR + WARN + INFO
@@ -21,7 +21,7 @@
     #define MY_DEBUG_BREAK() /* Unsupported platform, do nothing */
 #endif
 
-#define MAX_MEASSGE_SIZE 2048
+#define MAX_MESSAGE_SIZE 2048
 #define MAX_BUFFERED_MESSAGES 10
 
 enum log_level {
@@ -40,17 +40,17 @@ enum log_level {
 int log_init(char* LogFileName, char* LogFormat);
 void log_shutdown();
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, const char* message, ...);
-void print_Seperator(enum log_level level, int big);
+void print_Separator(enum log_level level, int big);
 
-/*  Formating the LogMessages can be customised with the following tags
-    to format all following Log Messages use: set_Formating(char* format);
-    e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
+/*  Formatting the LogMessages can be customised with the following tags
+    to format all following Log Messages use: set_Formatting(char* format);
+    e.g. set_Formatting("$B[$T] $L [$F]  $C$E")  or set_Formatting("$BTime:[$M $S] $L $E ==> $C")
     
     $T		Time				hh:mm:ss
     $H		Hour				hh
     $M		Minute				mm
-    $S		Secunde				ss
-    $J		MilliSecunde		mm
+    $S		Second				ss
+    $J		MilliSecond		mm
 
     $N		Date				yyyy:mm:dd:
     $Y		Date Year			yyyy
@@ -58,18 +58,18 @@ void print_Seperator(enum log_level level, int big);
     $D		Date Day			dd
 
     $F		Func. Name			main, foo
-    $A		File Name			C:\Porject\main.c C:\Porject\foo.c
-    $I		shortend File Name	main.c foo.c
+    $A		File Name			C:\Project\main.c C:\Project\foo.c
+    $I		shortened File Name	main.c foo.c
     $G		Line				1, 42
 
     $L		LogLevel			[TRACE], [DEBUG] … [FATAL]
-    $X		Alienment			add space for "INFO" & "WARN"
+    $X		Alignment			add space for "INFO" & "WARN"
     $B		Color Begin			from here the color starts
     $E		Color End			from here the color ends
-    $C		Text				Formated Message with variables
+    $C		Text				Formatted Message with variables
     $Z		New Line			Adds a new Line to the log*/
-void set_Formating(char* format);
-void use_Formating_Backup();
+void set_Formatting(char* format);
+void use_Formatting_Backup();
 
 // Define witch log levels should be written to log file directly and witch should be buffered
 //  0    =>   write all logs directly to log file
@@ -107,10 +107,10 @@ void set_buffer_Level();
 #if LOG_LEVEL_ENABLED >= 3
     #define CL_LOG_Debug(message, ...)              log_output(Debug, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
 
-    // Logs the end of a function, it would be helpfull to has the '$F' in your format    
+    // Logs the end of a function, it would be helpful to have the '$F' in your format
     #define CL_LOG_FUNC_END(message, ...)           log_output(Debug, "END ", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
 
-    // Logs the start of a function, it would be helpfull to has the '$F' in your format
+    // Logs the start of a function, it would be helpful to have the '$F' in your format
     #define CL_LOG_FUNC_START(message, ...)         log_output(Debug, "START ", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
 #else
     // Disabled by LogLevel
@@ -121,13 +121,13 @@ void set_buffer_Level();
     #define CL_LOG_FUNC_START(message, ...)         {;}
 #endif
 
-// define conditional log macro for REACE
+// define conditional log macro for RACE
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_LOG_Trace(message, ...)              log_output(Trace, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
-    // Insert a seperatioon line in Logoutput (-------)
-    #define CL_SEPERATOR()                          print_Seperator(Trace, 0);
-    // Insert a seperatioon line in Logoutput (=======)
-    #define CL_SEPERATOR_BIG()                      print_Seperator(Trace, 1);
+    // Insert a separation line in Logoutput (-------)
+    #define CL_SEPARATOR()                          print_Seperator(Trace, 0);
+    // Insert a separation line in Logoutput (=======)
+    #define CL_SEPARATOR_BIG()                      print_Seperator(Trace, 1);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Trace(message, ...) ;

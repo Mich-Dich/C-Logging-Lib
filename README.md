@@ -11,14 +11,14 @@ Welcome to the C Logging Library repository! This library is designed to provide
 ```C
 #include <logger.h>
 
-// Call this at the start of your programm to set LogFile name and message formating
+// Call this at the start of your programm to set LogFile name and message formatting
 int log_init("logfile.log", "$B[$T] $L [$F] $C$E$Z");
 
-// You can change the message formating at runtime for all following messages
-void set_Formating("$B[$T] $A-$F$E $C$Z");
+// You can change the message formatting at runtime for all following messages
+void set_formatting("$B[$T] $A-$F$E $C$Z");
 
 // You can also revert back to your previous Format
-void use_Formating_Backup();
+void use_formatting_Backup();
 
 // Define witch log levels should be written to log file directly and witch should be buffered
 //  0    =>   write all logs directly to log file
@@ -29,26 +29,26 @@ void use_Formating_Backup();
 void set_buffer_Level(2);
 
 // To log some information use one of the following macros
-CL_LOG(Trace, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Debug, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Info, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Warn, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Error, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Fatal, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Trace, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Debug, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Info, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Warn, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Error, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Fatal, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
 
-// Call this to automaticly log function Starts 
+// Call this to automatically log function Starts 
 CL_LOG_FUNC_START("")                           // No Args
 CL_LOG_FUNC_START("start param1: %d", someInt)  // With Args
 
-// Call this to automaticly log the successfull End of a function
+// Call this to automatically log the successfully End of a function
 CL_LOG_FUNC_END("")                             // No Args
 CL_LOG_FUNC_END("start param1: %d", someInt)    // With Args
 
-// Use this vaitation to make check some consition and log diffrent messages
+// Use this validation to make check some condition and log different messages
 CL_VALIDATE(expr, messageSuccess, messageFailure)
 
 // Use this assert to make sure your condition is true
-// The CL_ASSERT macro inserts a 'return RetVal’ if consition != true 
+// The CL_ASSERT macro inserts a 'return RetVal' if condition != true 
 CL_ASSERT(expr, messageSuccess, messageFailure, RetVal, ...)
 
 
@@ -57,31 +57,31 @@ void log_shutdown();
 
 ```
 
-### Formating
-Formating the LogMessages can be customised with the following tags<br>
-to format all following Log Messages use: set_Formating(char* format);<br>
-e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L $E ==> $C")
+### formatting
+formatting the LogMessages can be customised with the following tags<br>
+to format all following Log Messages use: set_formatting(char* format);<br>
+e.g. set_formatting("$B[$T] $L [$F]  $C$E")  or set_formatting("$BTime:[$M $S] $L $E ==> $C")
 
-| Code | Description | Format/Example                    |
-|------|-------------|-----------------------------------|
-| $T   | Time        | hh:mm:ss                          |
-| $H   | Time Hour   | hh                                |
-| $M   | Time Min.   | mm                                |
-| $S   | Time Sec.   | ss                                |
-|      |             |                                   |
-| $N   | Date        | yyyy:mm:dd                        |
-| $Y	 | Year	      | yyyy                              |
-| $O	 | Month	      | mm                                |
-| $D	 | Day	      | dd                                |
-|      |             |                                   |
-| $L	 | LogLevel    | TRACE, DEBUG … FATAL              |
-| $X	 | LogLevel    | add " " if logLevel INFO or DEBUG |
-| $F	 | Func. Name  | main, foo                         |
-| $A	 | File Name	| main.c foo.c                      |
-| $B	 | Color Begin	| from here the color starts        |
-| $E	 | Color End	| from here the color ends          |
-| $C	 | Log message | Formated Message with variables   |
-| $Z   | new Line    | Add a Line Break To your message  |
+| Code | Description  | Format/Example                    |
+|------|--------------|-----------------------------------|
+| $T   | Time         | hh:mm:ss                          |
+| $H   | Time Hour    | hh                                |
+| $M   | Time Min.    | mm                                |
+| $S   | Time Sec.    | ss                                |
+|      |              |                                   |
+| $N   | Date         | yyyy:mm:dd                        |
+| $Y	  | Year	        | yyyy                              |
+| $O	  | Month	       | mm                                |
+| $D	  | Day	         | dd                                |
+|      |              |                                   |
+| $L	  | LogLevel     | TRACE, DEBUG … FATAL              |
+| $X	  | LogLevel     | add " " if logLevel INFO or DEBUG |
+| $F	  | Func. Name   | main, foo                         |
+| $A	  | File Name	   | main.c foo.c                      |
+| $B	  | Color Begin	 | from here the color starts        |
+| $E	  | Color End	   | from here the color ends          |
+| $C	  | Log message  | Formatted Message with variables  |
+| $Z   | new Line     | Add a Line Break To your message  |
 
 ### Implemented Features
 
@@ -103,7 +103,7 @@ e.g. set_Formating("$B[$T] $L [$F]  $C$E")  or set_Formating("$BTime:[$M $S] $L 
 ### Planned Features
 
 1. **Multithreading:**
-   - Introduce thread safety mechanisms to ensure the library works seamlessly in multithreaded environments.
+   - Introduce thread safety mechanisms to ensure the library works seamlessly in multithreading environments.
 
 2. **Thread Safety:**
    - Enhance the library's thread safety to prevent race conditions and ensure reliable logging in concurrent applications.
