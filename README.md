@@ -12,10 +12,10 @@ Welcome to the C Logging Library repository! This library is designed to provide
 #include <logger.h>
 
 // Call this at the start of your programm to set LogFile name and message formating
-int log_init("logfile.log", "$B[$T] $L [$F] $C$E");
+int log_init("logfile.log", "$B[$T] $L [$F] $C$E$Z");
 
 // You can change the message formating at runtime for all following messages
-void set_Formating("$B[$T] $A-$F$E $C");
+void set_Formating("$B[$T] $A-$F$E $C$Z");
 
 // You can also revert back to your previous Format
 void use_Formating_Backup();
@@ -29,12 +29,12 @@ void use_Formating_Backup();
 void set_buffer_Level(2);
 
 // To log some information use one of the following macros
-CS_TRACE("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_DEBUG("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_INFO(" Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_WARN(" Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_ERROR("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_FATAL("Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_LOG(Trace, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_LOG(Debug, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_LOG(Info, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_LOG(Warn, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_LOG(Error, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CS_LOG(Fatal, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
 
 // Call this to automaticly log function Starts 
 CL_LOG_FUNC_START("")                           // No Args
