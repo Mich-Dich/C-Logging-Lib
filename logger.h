@@ -1,5 +1,7 @@
 #pragma once
 
+#include <time.h>
+
 // This enables the verious levels of the logging function (FATAL & ERROR are always on)
 //  0    =>   FATAL + ERROR
 //  1    =>   FATAL + ERROR + WARN
@@ -40,7 +42,7 @@ enum log_level {
 int log_init(char* LogFileName, char* LogFormat);
 void log_shutdown();
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, const char* message, ...);
-void print_Seperator(enum log_level level, int big);
+void print_Separator(enum log_level level, int big);
 
 /*  Formating the LogMessages can be customised with the following tags
     to format all following Log Messages use: set_Formating(char* format);
@@ -79,6 +81,15 @@ void use_Formating_Backup();
 //  4    =>   buffer: TRACE + DEBUG + INFO + WARN
 void set_buffer_Level();
 
+
+struct log_time_exact{
+
+    struct tm tm_generalTime;
+    struct timespec ts_exact;
+};
+
+void Calc_Func_Duration_Start(struct log_time_exact* StartTime);
+void Calc_Func_Duration(struct log_time_exact* StartTime);
 
 // ------------------------------------------------------------ LOGGING ------------------------------------------------------------
 
@@ -125,9 +136,9 @@ void set_buffer_Level();
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_LOG_Trace(message, ...)              log_output(Trace, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
     // Insert a seperatioon line in Logoutput (-------)
-    #define CL_SEPERATOR()                          print_Seperator(Trace, 0);
+    #define CL_SEPERATOR()                          print_Separator(Trace, 0);
     // Insert a seperatioon line in Logoutput (=======)
-    #define CL_SEPERATOR_BIG()                      print_Seperator(Trace, 1);
+    #define CL_SEPERATOR_BIG()                      print_Separator(Trace, 1);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Trace(message, ...) ;
@@ -156,3 +167,8 @@ void set_buffer_Level();
             MY_DEBUG_BREAK();                                                           \
         }
 
+
+#define CL_FUNC_DURATION_START()                struct log_time_exact Log_Duration_Calc_Struct_Start;       \
+                                                Calc_Func_Duration_Start(&Log_Duration_Calc_Struct_Start);
+
+#define CL_FUNC_DURATION()                      Calc_Func_Duration(&Log_Duration_Calc_Struct_Start);

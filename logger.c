@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <time.h>
 #include <pthread.h>
 #include <libgen.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include "logger.h"
 
@@ -332,10 +332,68 @@ void set_buffer_Level(int newLevel) {
 }
 
 //
-void print_Seperator(enum log_level level, int big) {
+void print_Separator(enum log_level level, int big) {
 
     set_Formating("$C$Z");
     const char* loc_Sperator = big ? seperator_Big : seperator;
     log_output(level, "", "", "", 0, loc_Sperator);
     use_Formating_Backup();
+}
+
+//
+void Calc_Func_Duration_Start(struct log_time_exact* StartTime) {
+
+    StartTime->tm_generalTime = getLocalTime();
+    clock_gettime(CLOCK_REALTIME, &StartTime->ts_exact);     
+
+    CL_LOG(Trace, "Starting Tine measurement")
+}
+
+//
+void Calc_Func_Duration(struct log_time_exact* StartTime) {
+
+    struct log_time_exact TimeNow;
+    TimeNow.tm_generalTime = getLocalTime();
+    clock_gettime(CLOCK_REALTIME, &TimeNow.ts_exact);
+
+    
+    TimeNow.tm_generalTime.tm_year -= StartTime->tm_generalTime.tm_year;
+    TimeNow.tm_generalTime.tm_mon -= StartTime->tm_generalTime.tm_mon;
+    TimeNow.tm_generalTime.tm_yday -= StartTime->tm_generalTime.tm_yday;
+    TimeNow.tm_generalTime.tm_hour -= StartTime->tm_generalTime.tm_hour;
+    TimeNow.tm_generalTime.tm_min -= StartTime->tm_generalTime.tm_min;
+    TimeNow.ts_exact.tv_sec -= StartTime->ts_exact.tv_sec;
+    TimeNow.ts_exact.tv_nsec -= StartTime->ts_exact.tv_nsec;
+
+    // Create Buffer Srings
+    char message_out[MAX_MEASSGE_SIZE];
+        memset(message_out, 0, sizeof(message_out));
+    char Format_Buffer[MAX_MEASSGE_SIZE];
+        memset(Format_Buffer, 0, sizeof(Format_Buffer));
+
+    if(TimeNow.tm_generalTime.tm_year > 0) {
+        LOGGER_FORMAT_FORMAT_MESSAGE("years: %04d", TimeNow.tm_generalTime.tm_year)
+    }
+    
+    if(TimeNow.tm_generalTime.tm_mon > 0) {
+        LOGGER_FORMAT_FORMAT_MESSAGE(" months: %02d", 12 % TimeNow.tm_generalTime.tm_mon)
+    }
+    
+    if(TimeNow.tm_generalTime.tm_yday > 0) {
+        LOGGER_FORMAT_FORMAT_MESSAGE(" days: %02d", 365 % TimeNow.tm_generalTime.tm_yday)
+    }
+    
+    if(TimeNow.tm_generalTime.tm_hour > 0) {
+        LOGGER_FORMAT_FORMAT_MESSAGE(" minutes: %02d", 24 % TimeNow.tm_generalTime.tm_hour)
+    }
+    
+    if(TimeNow.tm_generalTime.tm_min > 0) {
+        LOGGER_FORMAT_FORMAT_MESSAGE("%02d", 60 % TimeNow.tm_generalTime.tm_min)
+    }
+    
+    if(TimeNow.tm_generalTime.tm_min > 0) {
+        LOGGER_FORMAT_FORMAT_MESSAGE("%02d", 60 % TimeNow.tm_generalTime.tm_min)
+    }
+
+    CL_LOG(Trace, "Ending %s", message_out);
 }
