@@ -29,12 +29,12 @@ void use_Formating_Backup();
 void set_buffer_Level(2);
 
 // To log some information use one of the following macros
-CS_LOG(Trace, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_LOG(Debug, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_LOG(Info, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_LOG(Warn, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_LOG(Error, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
-CS_LOG(Fatal, "Your message goes here use standart formating: int: %d, string: %s", someInt, someStr)
+CL_LOG(Trace, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Debug, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Info, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Warn, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Error, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
+CL_LOG(Fatal, "Your message goes here use standart formatting: int: %d, string: %s", someInt, someStr)
 
 // Call this to automaticly log function Starts 
 CL_LOG_FUNC_START("")                           // No Args
