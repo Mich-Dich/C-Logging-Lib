@@ -35,14 +35,13 @@ enum log_level {
     Debug = 4,
     Trace = 5,
     LL_MAX_NUM = 6
-
 };
 
 //  Save FileName and LogFormat && Reset LogFile
 int log_init(char* LogFileName, char* LogFormat);
 void log_shutdown();
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, const char* message, ...);
-void print_Separator(enum log_level level, int big);
+void print_Seperator(enum log_level level, int big);
 
 /*  Formating the LogMessages can be customised with the following tags
     to format all following Log Messages use: set_Formating(char* format);
@@ -81,6 +80,7 @@ void use_Formating_Backup();
 //  4    =>   buffer: TRACE + DEBUG + INFO + WARN
 void set_buffer_Level();
 
+void set_log_level(enum log_level new_level);
 
 struct log_time_exact{
 
@@ -136,9 +136,9 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_LOG_Trace(message, ...)              log_output(Trace, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
     // Insert a seperatioon line in Logoutput (-------)
-    #define CL_SEPERATOR()                          print_Separator(Trace, 0);
+    #define CL_SEPERATOR()                          print_Seperator(Trace, 0);
     // Insert a seperatioon line in Logoutput (=======)
-    #define CL_SEPERATOR_BIG()                      print_Separator(Trace, 1);
+    #define CL_SEPERATOR_BIG()                      print_Seperator(Trace, 1);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Trace(message, ...) ;
@@ -151,24 +151,25 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
 #define CL_LOG(Type, message, ...)                  CL_LOG_##Type(message, ##__VA_ARGS__)
 
 // ------------------------------------------------------------ VALIDATION / ASSERTION ------------------------------------------------------------
-#define CL_VALIDATE(expr, messageSuccess, messageFailure, abortCommand, ...)                  \
-        if (expr) {                                                                     \
-             CL_LOG_Trace(messageSuccess, ##__VA_ARGS__)                                     \
-        } else {                                                                        \
+#define CL_VALIDATE(expr, messageSuccess, messageFailure, abortCommand, ...)                \
+        if (expr) {                                                                         \
+            CL_LOG_Trace(messageSuccess, ##__VA_ARGS__)                                     \
+        } else {                                                                            \
             CL_LOG_Error(messageFailure, ##__VA_ARGS__)                                     \
-            abortCommand;                                                              \
+            abortCommand;                                                                   \
         }   
 
-#define CL_ASSERT(expr, messageSuccess, messageFailure, ...)                            \
-        if (expr) {                                                                     \
+#define CL_ASSERT(expr, messageSuccess, messageFailure, ...)                                \
+        if (expr) {                                                                         \
             CL_LOG_Trace(messageSuccess, ##__VA_ARGS__)                                     \
-        } else {                                                                        \
+        } else {                                                                            \
             CL_LOG_Fatal(messageFailure, ##__VA_ARGS__)                                     \
-            MY_DEBUG_BREAK();                                                           \
+            MY_DEBUG_BREAK();                                                               \
         }
 
-
+// NOT FINISHED
 #define CL_FUNC_DURATION_START()                struct log_time_exact Log_Duration_Calc_Struct_Start;       \
                                                 Calc_Func_Duration_Start(&Log_Duration_Calc_Struct_Start);
 
+// NOT FINISHED
 #define CL_FUNC_DURATION()                      Calc_Func_Duration(&Log_Duration_Calc_Struct_Start);
