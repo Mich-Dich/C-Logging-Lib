@@ -24,14 +24,15 @@ typedef struct MessageBuffer{
 static const char* Console_Colour_Strings[6] = {"\x1b[1;41m", "\x1b[1;31m", "\x1b[1;93m", "\x1b[1;32m", "\x1b[1;94m", "\x1b[0;37m"};
 static const char* Console_Colour_Reset = "\x1b[0;39m";
 static const char* level_str[6] = {"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
-static const char* separator = "-------------------------------------------------------------------------------------------------------";
-static const char* separator_Big = "=======================================================================================================";
+static const char* seperator = "-------------------------------------------------------------------------------------------------------";
+static const char* seperator_Big = "=======================================================================================================";
 static FILE* logFile;
 
 static pthread_mutex_t LogLock = PTHREAD_MUTEX_INITIALIZER;
+static enum log_level internal_level = Trace;
 static char* TargetFileName = "unknown.txt";
-static char* TargetLogFormat = "$S[$N] $M$E";
-static char* TargetLogFormat_BACKUP = "$S[$N] $M$E";
+static char* TargetLogFormat = "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z";
+static char* TargetLogFormat_BACKUP = "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z";
 static int log_level_for_buffer = 3;
 static MessageBuffer Log_Message_Buffer = { .count = 0 };
 
@@ -59,7 +60,7 @@ int log_init(char* LogFileName, char* LogFormat) {
     // print title section to start of file
     else {
 
-        fprintf(logFile, "[%04d/%02d/%02d - %02d:%02d:%02d] Log initialized\n    Output-file: [%s]\n    Starting-format: %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, TargetFileName, TargetLogFormat);
+        fprintf(logFile, "[%04d/%02d/%02d - %02d:%02d:%02d] Log initalized\n    Output-file: [%s]\n    Starting-format: %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, TargetFileName, TargetLogFormat);
 
         if (LOG_LEVEL_ENABLED <= 4 || LOG_LEVEL_ENABLED >= 0) {
 
@@ -73,7 +74,7 @@ int log_init(char* LogFileName, char* LogFormat) {
             char* LogLevelText = malloc(LevelText_len);
             if (LogLevelText == NULL) {
                 
-                printf("FAILED to allocate memory to print enabled LogLevels");
+                printf("FAILED to allocate memmory to print enabled LogLevels");
                 return -1;
             }
             
@@ -84,7 +85,7 @@ int log_init(char* LogFileName, char* LogFormat) {
             fprintf(logFile, "    LOG_LEVEL_ENABLED = %d    enabled log macros are: %s\n", LOG_LEVEL_ENABLED, LogLevelText);
             free(LogLevelText);
         }
-        fprintf(logFile, "%s\n", separator_Big);
+        fprintf(logFile, "%s\n", seperator_Big);
         fclose(logFile);
     }    
     
@@ -92,37 +93,40 @@ int log_init(char* LogFileName, char* LogFormat) {
     return 0;
 }
 
-// write buffered messages to file and clean up output stream
+// write bufferd messages to file and clean up output stream
 void log_shutdown(){
 
      CL_LOG(Trace, "Shutdown")
     WriteMessagesToFile();
 }
 
-// Output a message to the standard output stream and a log file
-// !! CAUTION !! - do NOT make logs messages longer than [MAX_MESSAGE_SIZE] characters
+// Outout a message to the standart output stream and a log file
+// !! CAUTION !! - do NOT make logs messages longer than [MAX_MEASSGE_SIZE] characters
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, const char* message, ...) {
 
     // check if message empty
     if (message[0] == '\0' && prefix[0] == '\0')
         return;
 
+    if (level > internal_level) 
+        return;
+
     struct tm locTime = getLocalTime();
 
-    // Create Buffer Strings
+    // Create Buffer Srings
     char message_out[MAX_MEASSGE_SIZE];
         memset(message_out, 0, sizeof(message_out));/*
-    char message_log[MAX_MESSAGE_SIZE];
+    char message_log[MAX_MEASSGE_SIZE];
         memset(message_log, 0, sizeof(message_log));*/
-    char message_formatted[MAX_MEASSGE_SIZE];
-        memset(message_formatted, 0, sizeof(message_formatted));
+    char message_formated[MAX_MEASSGE_SIZE];
+        memset(message_formated, 0, sizeof(message_formated));
     char Format_Command[2] = "0\0";
     char Format_Buffer[MAX_MEASSGE_SIZE];
 
-    // write all arguments in to [message_formatted]
+    // write all arguments in to [message_formated]
     __builtin_va_list args_ptr;
     va_start(args_ptr, message);
-        vsnprintf(message_formatted, MAX_MEASSGE_SIZE, message, args_ptr);
+        vsnprintf(message_formated, MAX_MEASSGE_SIZE, message, args_ptr);
     va_end(args_ptr);
 
 
@@ -148,7 +152,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
             
             // input text (message)
             case 'C':
-                LOGGER_FORMAT_FORMAT_MESSAGE("%s%s", prefix, message_formatted)
+                LOGGER_FORMAT_FORMAT_MESSAGE("%s%s", prefix, message_formated)
             break;
 
             // Log Level
@@ -172,6 +176,11 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
             
             // File Name
             case 'A':
+                LOGGER_FORMAT_FORMAT_MESSAGE("%s", fileName)
+            break;
+            
+            // Shortend File Name
+            case 'I':
                 LOGGER_FORMAT_FORMAT_MESSAGE("%s", basename(fileName))
             break;
             
@@ -201,6 +210,15 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
                 LOGGER_FORMAT_FORMAT_MESSAGE("%02d", locTime.tm_sec)
             break;
 
+            // Clock ss
+            case 'J': {
+                struct timespec spec;
+                clock_gettime(CLOCK_REALTIME, &spec);
+                long ms = (long)(spec.tv_nsec / 1.0e6);
+                LOGGER_FORMAT_FORMAT_MESSAGE("%03ld", ms)
+            }
+            break;
+
             // ------------------------------------  Date  -------------------------------------------------------------------------------
             // Data yyyy/mm/dd
             case 'N':
@@ -209,7 +227,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
             
             // Year
             case 'Y':
-                LOGGER_FORMAT_FORMAT_MESSAGE("%d", locTime.tm_year + 1900)
+                LOGGER_FORMAT_FORMAT_MESSAGE("%04d", locTime.tm_year + 1900)
             break;
             
             // Month
@@ -234,19 +252,16 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
         else {
 
             strncat(message_out, &TargetLogFormat[x], 1);
-            //strncat(message_log, &TargetLogFormat[x], 1);
         }
     }
     
-    //Format_Messages(message_out, message_log, "\n");
-    //LOGGER_FORMAT_FORMAT_MESSAGE("\n")
     output_Messsage(level, (const char*)message_out);
 }
 
 //
 void output_Messsage(enum log_level level, const char* message) {
     
-    // Print Message to standard output
+    // Print Message to standart output
     printf("%s", message);
 
     pthread_mutex_lock(&LogLock);
@@ -285,14 +300,14 @@ void WriteMessagesToFile() {
 }
 
 // Change Format of log messages and backup previous Format
-void set_Formatting(char* LogFormat) {
+void set_Formating(char* LogFormat) {
 
     TargetLogFormat_BACKUP = TargetLogFormat;
     TargetLogFormat = LogFormat;
 }
 
-// Sets the Backup version of Format to be used as Main Format
-void use_Formatting_Backup() {
+// Settis the Bckup version of Format to be used as Main Format
+void use_Formating_Backup() {
 
     TargetLogFormat = TargetLogFormat_BACKUP;
 }
@@ -332,15 +347,25 @@ void set_buffer_Level(int newLevel) {
 }
 
 //
-void print_Separator(enum log_level level, int big) {
+void print_Seperator(enum log_level level, int big) {
 
-    set_Formatting("$C$Z");
-    const char* log_Separator = big ? separator_Big : separator;
-    log_output(level, "", "", "", 0, log_Separator);
-    use_Formatting_Backup();
+    set_Formating("$C$Z");
+    const char* loc_Sperator = big ? seperator_Big : seperator;
+    log_output(level, "", "", "", 0, loc_Sperator);
+    use_Formating_Backup();
 }
 
 //
+void set_log_level(enum log_level new_level) {
+
+    CL_VALIDATE(new_level < LL_MAX_NUM && new_level > Fatal, "", "Selected log level is out of bounds (1 <= [new_level: %d] <= 5)", return, new_level)
+
+    CL_LOG(Warn, "Setting [log_level: %d]", new_level)
+    internal_level = new_level;
+
+}
+
+// NOT FINISHED
 void Calc_Func_Duration_Start(struct log_time_exact* StartTime) {
 
     StartTime->tm_generalTime = getLocalTime();
@@ -349,13 +374,12 @@ void Calc_Func_Duration_Start(struct log_time_exact* StartTime) {
     CL_LOG(Trace, "Starting Tine measurement")
 }
 
-//
+// NOT FINISHED
 void Calc_Func_Duration(struct log_time_exact* StartTime) {
 
     struct log_time_exact TimeNow;
     TimeNow.tm_generalTime = getLocalTime();
     clock_gettime(CLOCK_REALTIME, &TimeNow.ts_exact);
-
     
     TimeNow.tm_generalTime.tm_year -= StartTime->tm_generalTime.tm_year;
     TimeNow.tm_generalTime.tm_mon -= StartTime->tm_generalTime.tm_mon;
@@ -376,23 +400,26 @@ void Calc_Func_Duration(struct log_time_exact* StartTime) {
     }
     
     if(TimeNow.tm_generalTime.tm_mon > 0) {
-        LOGGER_FORMAT_FORMAT_MESSAGE(" months: %02d", 12 % TimeNow.tm_generalTime.tm_mon)
+        LOGGER_FORMAT_FORMAT_MESSAGE(" months: %02d", (12 % TimeNow.tm_generalTime.tm_mon))
     }
     
     if(TimeNow.tm_generalTime.tm_yday > 0) {
-        LOGGER_FORMAT_FORMAT_MESSAGE(" days: %02d", 365 % TimeNow.tm_generalTime.tm_yday)
+        LOGGER_FORMAT_FORMAT_MESSAGE(" days: %02d", (365 % TimeNow.tm_generalTime.tm_yday))
     }
     
     if(TimeNow.tm_generalTime.tm_hour > 0) {
-        LOGGER_FORMAT_FORMAT_MESSAGE(" minutes: %02d", 24 % TimeNow.tm_generalTime.tm_hour)
+        LOGGER_FORMAT_FORMAT_MESSAGE(" hours: %02d", (24 % TimeNow.tm_generalTime.tm_hour))
     }
     
     if(TimeNow.tm_generalTime.tm_min > 0) {
-        LOGGER_FORMAT_FORMAT_MESSAGE("%02d", 60 % TimeNow.tm_generalTime.tm_min)
+        LOGGER_FORMAT_FORMAT_MESSAGE(" min: %02d", (60 % TimeNow.tm_generalTime.tm_min))
     }
     
-    if(TimeNow.tm_generalTime.tm_min > 0) {
-        LOGGER_FORMAT_FORMAT_MESSAGE("%02d", 60 % TimeNow.tm_generalTime.tm_min)
+    if(TimeNow.ts_exact.tv_sec > 0) {
+        LOGGER_FORMAT_FORMAT_MESSAGE(" s:%02ld", (60 % TimeNow.ts_exact.tv_sec))
+    }
+    if(TimeNow.ts_exact.tv_nsec > 0) {
+        LOGGER_FORMAT_FORMAT_MESSAGE(" nano-sec:%02ld", (60 % TimeNow.ts_exact.tv_nsec))
     }
 
     CL_LOG(Trace, "Ending %s", message_out);
