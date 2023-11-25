@@ -1,6 +1,8 @@
 #pragma once
 
 #include <time.h>
+#include <pthread.h>
+#include <errno.h>
 
 // This enables the verious levels of the logging function (FATAL & ERROR are always on)
 //  0    =>   FATAL + ERROR
@@ -13,6 +15,8 @@
 #define FUNCTION_NAME_STRING    __func__
 #define FILE_NAME_STRING        __FILE__
 #define FUNC_LINE               __LINE__
+#define THREAD_ID               pthread_self()
+#define ERROR_STR               strerror(errno)
 
 // Debug breakpoint macro
 #if defined(__GNUC__) || defined(__clang__)
@@ -40,7 +44,7 @@ enum log_level {
 //  Save FileName and LogFormat && Reset LogFile
 int log_init(char* LogFileName, char* LogFormat);
 void log_shutdown();
-void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, const char* message, ...);
+void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, pthread_t thread_id, const char* message, ...);
 void print_Seperator(enum log_level level, int big);
 
 /*  Formating the LogMessages can be customised with the following tags
@@ -62,6 +66,7 @@ void print_Seperator(enum log_level level, int big);
     $A		File Name			C:\Porject\main.c C:\Porject\foo.c
     $I		shortend File Name	main.c foo.c
     $G		Line				1, 42
+    $P      thread id          b5bff640
 
     $L		LogLevel			[TRACE], [DEBUG] … [FATAL]
     $X		Alienment			add space for "INFO" & "WARN"
@@ -93,13 +98,13 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
 
 // ------------------------------------------------------------ LOGGING ------------------------------------------------------------
 
-    #define CL_LOG_Fatal(message, ...)              log_output(Fatal, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
-    #define CL_LOG_Error(message, ...)              log_output(Error, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
+    #define CL_LOG_Fatal(message, ...)              log_output(Fatal, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
+    #define CL_LOG_Error(message, ...)              log_output(Error, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
 
 
 // define conditional log macro for WARNINGS
 #if LOG_LEVEL_ENABLED >= 1
-    #define CL_LOG_Warn(message, ...)               log_output(Warn, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
+    #define CL_LOG_Warn(message, ...)               log_output(Warn, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Warn(message, ...)               {;}
@@ -107,7 +112,7 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
 
 // define conditional log macro for INFO
 #if LOG_LEVEL_ENABLED >= 2
-    #define CL_LOG_Info(message, ...)               log_output(Info, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
+    #define CL_LOG_Info(message, ...)               log_output(Info, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
                  
 #else
     // Disabled by LogLevel
@@ -116,13 +121,13 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
 
 // define conditional log macro for DEBUG
 #if LOG_LEVEL_ENABLED >= 3
-    #define CL_LOG_Debug(message, ...)              log_output(Debug, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
+    #define CL_LOG_Debug(message, ...)              log_output(Debug, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
 
     // Logs the end of a function, it would be helpfull to has the '$F' in your format    
-    #define CL_LOG_FUNC_END(message, ...)           log_output(Debug, "END ", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
+    #define CL_LOG_FUNC_END(message, ...)           log_output(Debug, "END ", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
 
     // Logs the start of a function, it would be helpfull to has the '$F' in your format
-    #define CL_LOG_FUNC_START(message, ...)         log_output(Debug, "START ", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
+    #define CL_LOG_FUNC_START(message, ...)         log_output(Debug, "START ", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Debug(message, ...)              {;}
@@ -134,7 +139,7 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
 
 // define conditional log macro for REACE
 #if LOG_LEVEL_ENABLED >= 4
-    #define CL_LOG_Trace(message, ...)              log_output(Trace, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, message, ##__VA_ARGS__);
+    #define CL_LOG_Trace(message, ...)              log_output(Trace, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
     // Insert a seperatioon line in Logoutput (-------)
     #define CL_SEPERATOR()                          print_Seperator(Trace, 0);
     // Insert a seperatioon line in Logoutput (=======)

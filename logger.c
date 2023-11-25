@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <libgen.h>
 #include <stdlib.h>
+
 #include <inttypes.h>
 
 #include "logger.h"
@@ -102,7 +103,7 @@ void log_shutdown(){
 
 // Outout a message to the standart output stream and a log file
 // !! CAUTION !! - do NOT make logs messages longer than [MAX_MEASSGE_SIZE] characters
-void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, const char* message, ...) {
+void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, pthread_t thread_id, const char* message, ...) {
 
     // check if message empty
     if (message[0] == '\0' && prefix[0] == '\0')
@@ -177,6 +178,11 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
             // File Name
             case 'A':
                 LOGGER_FORMAT_FORMAT_MESSAGE("%s", fileName)
+            break;
+            
+            // File Name
+            case 'P':
+                LOGGER_FORMAT_FORMAT_MESSAGE("%x", (uint32_t)thread_id)
             break;
             
             // Shortend File Name
@@ -351,7 +357,7 @@ void print_Seperator(enum log_level level, int big) {
 
     set_Formating("$C$Z");
     const char* loc_Sperator = big ? seperator_Big : seperator;
-    log_output(level, "", "", "", 0, loc_Sperator);
+    log_output(level, "", "", "", 0, 0, loc_Sperator);
     use_Formating_Backup();
 }
 
@@ -360,7 +366,7 @@ void set_log_level(enum log_level new_level) {
 
     CL_VALIDATE(new_level < LL_MAX_NUM && new_level > Fatal, "", "Selected log level is out of bounds (1 <= [new_level: %d] <= 5)", return, new_level)
 
-    CL_LOG(Warn, "Setting [log_level: %d]", new_level)
+    CL_LOG(Trace, "Setting [log_level: %s]", level_str[new_level])
     internal_level = new_level;
 
 }
