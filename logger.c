@@ -43,7 +43,7 @@ void output_Messsage(enum log_level level, const char* message);
 //void Format_Messages(char* out_mes, char* log_mes, const char* format, ...);
 void WriteMessagesToFile();
 
-// Create Log-File and setup output stream
+// Create or reset a Log-File: [LogFileName] and setup output format & stream
 int log_init(char* LogFileName, char* LogFormat) {
 
     TargetFileName = LogFileName;
@@ -94,7 +94,7 @@ int log_init(char* LogFileName, char* LogFormat) {
     return 0;
 }
 
-// write bufferd messages to file and clean up output stream
+// write bufferd messages to logFile and clean up output stream
 void log_shutdown(){
 
      CL_LOG(Trace, "Shutdown")
@@ -102,7 +102,7 @@ void log_shutdown(){
 }
 
 // Outout a message to the standart output stream and a log file
-// !! CAUTION !! - do NOT make logs messages longer than [MAX_MEASSGE_SIZE] characters
+// !! CAUTION !! - do NOT make logs messages longer than MAX_MEASSGE_SIZE
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, pthread_t thread_id, const char* message, ...) {
 
     // check if message empty
@@ -216,7 +216,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
                 LOGGER_FORMAT_FORMAT_MESSAGE("%02d", locTime.tm_sec)
             break;
 
-            // Clock ms
+            // Clock ss
             case 'J': {
                 struct timespec spec;
                 clock_gettime(CLOCK_REALTIME, &spec);
@@ -355,14 +355,15 @@ void set_buffer_Level(int newLevel) {
     }
 }
 
-//
-void print_Seperator(int big) {
+// Print a seperator, small; "---" big: "==="
+void print_Seperator(bool big) {
 
     const char* loc_Sperator = big ? seperator_Big : seperator;
     output_Messsage(Trace, loc_Sperator);
 }
 
-//
+// Set what leg level should be printed to terminal
+// CAUTION! this only applies to loglevels that are enabled be LOG_LEVEL_ENABLED
 void set_log_level(enum log_level new_level) {
 
     CL_VALIDATE(new_level < LL_MAX_NUM && new_level > Fatal, "", "Selected log level is out of bounds (1 <= [new_level: %d] <= 5)", return, new_level)
@@ -372,6 +373,7 @@ void set_log_level(enum log_level new_level) {
 
 }
 
+// remenbers the exact time at witch this function was called
 // NOT FINISHED
 void Calc_Func_Duration_Start(struct log_time_exact* StartTime) {
 
@@ -381,6 +383,7 @@ void Calc_Func_Duration_Start(struct log_time_exact* StartTime) {
     CL_LOG(Trace, "Starting Tine measurement")
 }
 
+// Calculates the time diffrence between calling [Calc_Func_Duration_Start] and this function
 // NOT FINISHED
 void Calc_Func_Duration(struct log_time_exact* StartTime) {
 

@@ -3,6 +3,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <errno.h>
+#include <stdbool.h>
 
 // This enables the verious levels of the logging function (FATAL & ERROR are always on)
 //  0    =>   FATAL + ERROR
@@ -12,6 +13,8 @@
 //  4    =>   FATAL + ERROR + WARN + INFO + DEBUG + TRACE
 #define LOG_LEVEL_ENABLED 4
 
+#define MAX_MEASSGE_SIZE        2048
+#define MAX_BUFFERED_MESSAGES   10
 #define FUNCTION_NAME_STRING    __func__
 #define FILE_NAME_STRING        __FILE__
 #define FUNC_LINE               __LINE__
@@ -20,18 +23,14 @@
 
 // Debug breakpoint macro
 #if defined(__GNUC__) || defined(__clang__)
-    #define MY_DEBUG_BREAK() __asm__("int $3")
+    #define MY_DEBUG_BREAK      __asm__("int $3")
 #elif defined(_MSC_VER)
-    #define MY_DEBUG_BREAK() __debugbreak()
+    #define MY_DEBUG_BREAK      __debugbreak()
 #else
-    #define MY_DEBUG_BREAK() /* Unsupported platform, do nothing */
+    #define MY_DEBUG_BREAK      /* Unsupported platform, do nothing */
 #endif
 
-#define MAX_MEASSGE_SIZE 2048
-#define MAX_BUFFERED_MESSAGES 10
-
 enum log_level {
-
     Fatal = 0,
     Error = 1,
     Warn = 2,
@@ -41,11 +40,14 @@ enum log_level {
     LL_MAX_NUM = 6
 };
 
-//  Save FileName and LogFormat && Reset LogFile
+struct log_time_exact{
+    struct tm tm_generalTime;
+    struct timespec ts_exact;
+};
+
 int log_init(char* LogFileName, char* LogFormat);
 void log_shutdown();
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, pthread_t thread_id, const char* message, ...);
-void print_Seperator(int big);
 
 /*  Formating the LogMessages can be customised with the following tags
     to format all following Log Messages use: set_Formating(char* format);
@@ -86,15 +88,15 @@ void use_Formating_Backup();
 void set_buffer_Level();
 
 void set_log_level(enum log_level new_level);
-
-struct log_time_exact{
-
-    struct tm tm_generalTime;
-    struct timespec ts_exact;
-};
-
+void print_Seperator(bool big);
 void Calc_Func_Duration_Start(struct log_time_exact* StartTime);
 void Calc_Func_Duration(struct log_time_exact* StartTime);
+
+// Converts a bool value to a string
+static inline const char* bool_To_String(bool boolValue) { return boolValue ? " true" : "false"; }
+
+// checks pointers and returns " NULL" or "valid"
+static inline const char* ptr_To_String(void* pointer) { return (pointer == NULL) ? " NULL" : "valid"; }
 
 // ------------------------------------------------------------ LOGGING ------------------------------------------------------------
 
@@ -141,9 +143,9 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_LOG_Trace(message, ...)              log_output(Trace, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
     // Insert a seperatioon line in Logoutput (-------)
-    #define CL_SEPERATOR()                          print_Seperator(0);
+    #define CL_SEPERATOR()                          print_Seperator(false);
     // Insert a seperatioon line in Logoutput (=======)
-    #define CL_SEPERATOR_BIG()                      print_Seperator(1);
+    #define CL_SEPERATOR_BIG()                      print_Seperator(true);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Trace(message, ...) ;
@@ -169,12 +171,15 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
             CL_LOG_Trace(messageSuccess, ##__VA_ARGS__)                                     \
         } else {                                                                            \
             CL_LOG_Fatal(messageFailure, ##__VA_ARGS__)                                     \
-            MY_DEBUG_BREAK();                                                               \
+            MY_DEBUG_BREAK;                                                               \
         }
 
-// NOT FINISHED
+// ------------------------------------------------------------ MEASURE EXECUTION TIME ------------------------------------------------------------
+
+// Remenbers the exact time at witch this macro was called
+// CAUTION! only call once in a given scope
 #define CL_FUNC_DURATION_START()                struct log_time_exact Log_Duration_Calc_Struct_Start;       \
                                                 Calc_Func_Duration_Start(&Log_Duration_Calc_Struct_Start);
 
-// NOT FINISHED
+// Calculates the time diffrence between calling [CL_FUNC_DURATION_START] and this Macro
 #define CL_FUNC_DURATION()                      Calc_Func_Duration(&Log_Duration_Calc_Struct_Start);
