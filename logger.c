@@ -25,12 +25,12 @@ typedef struct MessageBuffer{
 static const char* Console_Colour_Strings[6] = {"\x1b[1;41m", "\x1b[1;31m", "\x1b[1;93m", "\x1b[1;32m", "\x1b[1;94m", "\x1b[0;37m"};
 static const char* Console_Colour_Reset = "\x1b[0;39m";
 static const char* level_str[6] = {"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
-static const char* seperator = "-------------------------------------------------------------------------------------------------------";
-static const char* seperator_Big = "=======================================================================================================";
+static const char* seperator = "-------------------------------------------------------------------------------------------------------\n";
+static const char* seperator_Big = "=======================================================================================================\n";
 static FILE* logFile;
 
 static pthread_mutex_t LogLock = PTHREAD_MUTEX_INITIALIZER;
-static enum log_level internal_level = Trace;
+static enum log_level internal_level = Error;
 static char* TargetFileName = "unknown.txt";
 static char* TargetLogFormat = "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z";
 static char* TargetLogFormat_BACKUP = "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z";
@@ -216,7 +216,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
                 LOGGER_FORMAT_FORMAT_MESSAGE("%02d", locTime.tm_sec)
             break;
 
-            // Clock ss
+            // Clock ms
             case 'J': {
                 struct timespec spec;
                 clock_gettime(CLOCK_REALTIME, &spec);
@@ -267,6 +267,9 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
 //
 void output_Messsage(enum log_level level, const char* message) {
     
+    if (level > internal_level) 
+        return;
+        
     // Print Message to standart output
     printf("%s", message);
 
@@ -353,12 +356,10 @@ void set_buffer_Level(int newLevel) {
 }
 
 //
-void print_Seperator(enum log_level level, int big) {
+void print_Seperator(int big) {
 
-    set_Formating("$C$Z");
     const char* loc_Sperator = big ? seperator_Big : seperator;
-    log_output(level, "", "", "", 0, 0, loc_Sperator);
-    use_Formating_Backup();
+    output_Messsage(Trace, loc_Sperator);
 }
 
 //

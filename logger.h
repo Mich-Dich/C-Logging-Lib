@@ -45,7 +45,7 @@ enum log_level {
 int log_init(char* LogFileName, char* LogFormat);
 void log_shutdown();
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, pthread_t thread_id, const char* message, ...);
-void print_Seperator(enum log_level level, int big);
+void print_Seperator(int big);
 
 /*  Formating the LogMessages can be customised with the following tags
     to format all following Log Messages use: set_Formating(char* format);
@@ -141,9 +141,9 @@ void Calc_Func_Duration(struct log_time_exact* StartTime);
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_LOG_Trace(message, ...)              log_output(Trace, "", FUNCTION_NAME_STRING, FILE_NAME_STRING, FUNC_LINE, THREAD_ID, message, ##__VA_ARGS__);
     // Insert a seperatioon line in Logoutput (-------)
-    #define CL_SEPERATOR()                          print_Seperator(Trace, 0);
+    #define CL_SEPERATOR()                          print_Seperator(0);
     // Insert a seperatioon line in Logoutput (=======)
-    #define CL_SEPERATOR_BIG()                      print_Seperator(Trace, 1);
+    #define CL_SEPERATOR_BIG()                      print_Seperator(1);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Trace(message, ...) ;
