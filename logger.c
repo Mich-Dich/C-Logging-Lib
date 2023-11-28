@@ -116,9 +116,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
 
     // Create Buffer Srings
     char message_out[MAX_MEASSGE_SIZE];
-        memset(message_out, 0, sizeof(message_out));/*
-    char message_log[MAX_MEASSGE_SIZE];
-        memset(message_log, 0, sizeof(message_log));*/
+        memset(message_out, 0, sizeof(message_out));
     char message_formated[MAX_MEASSGE_SIZE];
         memset(message_formated, 0, sizeof(message_formated));
     char Format_Command[2] = "0\0";
@@ -272,6 +270,7 @@ void output_Messsage(enum log_level level, const char* message) {
         
     // Print Message to standart output
     printf("%s", message);
+    fflush(stdout);
 
     pthread_mutex_lock(&LogLock);
     // Save message in Buffer
