@@ -63,9 +63,8 @@ void output_Messsage(enum log_level level, const char* message, pthread_t thread
 void WriteMessagesToFile();
 bool Create_Log_File(const char* FileName);
 ThreadNameMap* add_Thread_Name_Mapping(pthread_t thread, const char* name);
-ThreadNameMap* add_Thread_Name_Mapping(pthread_t thread, const char* name);
-void remove_Entry(pthread_t threadID);
 ThreadNameMap* f_find_Entry(pthread_t threadID);
+void remove_Entry(pthread_t threadID);
 int remove_all_Files_In_Directory(const char *dirName);
 
 
