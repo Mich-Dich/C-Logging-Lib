@@ -10,7 +10,6 @@
 #include <dirent.h>
 #include <stdbool.h>
 
-
 #include "logger.h"
 
 #define REGISTERED_THREAD_NAME_LEN_MAX 256
@@ -41,21 +40,24 @@ typedef struct SpecificLogLevelFormat{
     char* Format;
 } SpecificLogLevelFormat;
 
-// FATAL,ERROR,WARN,INFO,DEBUG,TRACE
+// ------------------------------------------------------------------------------------------ Static Var ------------------------------------------------------------------------------------------
+
 static const char* Console_Colour_Strings[LL_MAX_NUM] = {"\x1b[1;41m", "\x1b[1;31m", "\x1b[1;93m", "\x1b[1;32m", "\x1b[1;94m", "\x1b[0;37m"};
 static const char* Console_Colour_Reset = "\x1b[0;39m";
 static const char* level_str[LL_MAX_NUM] = {"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
 static const char* separator     = "-------------------------------------------------------------------------------------------------------\n";
 static const char* separator_Big = "=======================================================================================================\n";
 static FILE* logFile;
-
 static pthread_mutex_t LogLock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_t MainThread = 0;
 static enum log_level internal_level = Trace;
+static int log_level_for_buffer = 0;
+static MessageBuffer Log_Message_Buffer = { .count = 0 };
+static ThreadNameMap* firstEntry = NULL;
+static ThreadNameMap* lastEntry = NULL;
+static bool Loc_Use_separate_Files_for_every_Thread = true;
 static char* MainLogFileName = "unknown.txt";
 static char* m_GeneralLogFormat = "[Default] [$B$F: $G$E] - $B$C$E$Z";
 static char* m_GeneralLogFormat_BACKUP = "[Default] [$B$F: $G$E] - $B$C$E$Z";
-
 static SpecificLogLevelFormat SpecificLogFormatArray[] = { 
     {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"}, 
     {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"}, 
@@ -65,15 +67,18 @@ static SpecificLogLevelFormat SpecificLogFormatArray[] = {
     {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"},
 };
 
-static int log_level_for_buffer = 0;
-static MessageBuffer Log_Message_Buffer = { .count = 0 };
-static ThreadNameMap* firstEntry = NULL;
-static ThreadNameMap* lastEntry = NULL;
-static bool Loc_Use_separate_Files_for_every_Thread = true;
+// ------------------------------------------------------------------------------------------ Semi-inline functions ------------------------------------------------------------------------------------------
+// Print a separator "---"
+void print_Separator(pthread_t threadID)        { output_Message(Trace, separator, threadID); }
+
+// Print a separator "==="
+void print_Separator_Big(pthread_t threadID)    { output_Message(Trace, separator_Big, threadID); }
+
+// ------------------------------------------------------------------------------------------ private functions ------------------------------------------------------------------------------------------
 
 // local Functions
 struct tm getLocalTime(void);
-void output_Messsage(enum log_level level, const char* message, pthread_t threadID);
+void output_Message(enum log_level level, const char* message, pthread_t threadID);
 void WriteMessagesToFile();
 bool Create_Log_File(const char* FileName);
 ThreadNameMap* add_Thread_Name_Mapping(pthread_t thread, const char* name);
@@ -91,15 +96,12 @@ int log_init(char* LogFileName, char* GeneralLogFormat, pthread_t threadID, int 
 
     MainLogFileName = LogFileName;    
     m_GeneralLogFormat = GeneralLogFormat;
-    MainThread = threadID;
-
     Loc_Use_separate_Files_for_every_Thread = Use_separate_Files_for_every_Thread ? true : false;
 
     // Replace with your directory path
     const char *directoryName = "./Logs";
-    if (remove_all_Files_In_Directory(directoryName) != 0) {
+    if (remove_all_Files_In_Directory(directoryName) != 0) 
         fprintf(stderr, "Error removing files in the directory.\n");
-    }
 
     CL_LOG(Trace, "Initialize")
 
@@ -109,15 +111,10 @@ int log_init(char* LogFileName, char* GeneralLogFormat, pthread_t threadID, int 
 
 bool Create_Log_File(const char* FileName) {
 
-    //printf(" - - - Creating Log File: %s\n", FileName);
-
     // Open File
     logFile = fopen(FileName, "w");
-    if (logFile == NULL) {
-
-        //printf(" !=!=!=!=!=!=! Error opening log file !=!=!=!=!=!=!");
+    if (logFile == NULL) 
         return false;
-    }
     
     // print title section to start of file
     else {
@@ -130,9 +127,8 @@ bool Create_Log_File(const char* FileName) {
             static const char* loc_level_str[6] = {"FATAL", " + ERROR", " + WARN", " + INFO", " + DEBUG", " + TRACE"};
             
             size_t LevelText_len = 1;
-            for (int x = 0; x < LOG_LEVEL_ENABLED + 2; x++) {
+            for (int x = 0; x < LOG_LEVEL_ENABLED + 2; x++)
                 LevelText_len += strlen(loc_level_str[x]);
-            }
 
             char* LogLevelText = malloc(LevelText_len);
             if (LogLevelText == NULL) {
@@ -142,9 +138,9 @@ bool Create_Log_File(const char* FileName) {
             }
             
             LogLevelText[0] = '\0';
-            for (int x = 0; x < LOG_LEVEL_ENABLED + 2; x++) {
+            for (int x = 0; x < LOG_LEVEL_ENABLED + 2; x++)
                 strcat(LogLevelText, loc_level_str[x]);
-            }
+                
             fprintf(logFile, "    LOG_LEVEL_ENABLED = %d    enabled log macros are: %s\n", LOG_LEVEL_ENABLED, LogLevelText);
             free(LogLevelText);
         }
@@ -157,7 +153,7 @@ bool Create_Log_File(const char* FileName) {
 // write buffered messages to logFile and clean up output stream
 void log_shutdown(){
 
-     CL_LOG(Trace, "Shutdown")
+    CL_LOG(Trace, "Shutdown")
     WriteMessagesToFile();
 }
 
@@ -323,11 +319,11 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
         }
     }
     
-    output_Messsage(level, (const char*)message_out, thread_id);
+    output_Message(level, (const char*)message_out, thread_id);
 }
 
 //
-void output_Messsage(enum log_level level, const char* message, pthread_t threadID) {
+void output_Message(enum log_level level, const char* message, pthread_t threadID) {
     
     // Print Message to standard output
     if (level <= internal_level) {
@@ -356,7 +352,6 @@ void output_Messsage(enum log_level level, const char* message, pthread_t thread
 //
 void WriteMessagesToFile() {
 
-    // NEW 
     ThreadNameMap* loc_Entry = NULL;
     char filename[REGISTERED_THREAD_NAME_LEN_MAX];
     for (int x = 0; x < Log_Message_Buffer.count; x++) {
@@ -396,7 +391,6 @@ void WriteMessagesToFile() {
         fputs((const char*)Log_Message_Buffer.messages[x].text, file); 
         fclose(file);
     }
-    return;
 }
 
 // 
@@ -496,7 +490,6 @@ void remove_Entry(pthread_t threadID) {
 
     free(locPointer);
     pthread_mutex_unlock(&LogLock);
-    return;
 }
 
 // Iterate through list and try to find entry by thread // Returns NULL if not found
@@ -538,7 +531,6 @@ void Set_Format_For_Specific_Log_Level(enum log_level level, char* Format) {
 
     SpecificLogFormatArray[level].isInUse = true;
     SpecificLogFormatArray[level].Format = Format;
-
 }
 
 //
@@ -563,17 +555,9 @@ void set_buffer_Level(int newLevel) {
     if( newLevel <= 4 && newLevel >= 0)
         log_level_for_buffer = newLevel;
 
-    else {
+    else 
         CL_LOG(Error, "Input invalid Level (0 <= newLevel <= 4), input: %d", newLevel)
-        return;
-    }
 }
-
-// Print a separator "---"
-void print_Separator(pthread_t threadID)        { output_Messsage(Trace, separator, threadID); }
-
-// Print a separator "==="
-void print_Separator_Big(pthread_t threadID)    { output_Messsage(Trace, separator_Big, threadID); }
 
 // Set what leg level should be printed to terminal
 // CAUTION! this only applies to log levels that are enabled be LOG_LEVEL_ENABLED
@@ -583,13 +567,12 @@ void set_log_level(enum log_level new_level) {
 
     CL_LOG(Trace, "Setting [log_level: %s]", level_str[new_level])
     internal_level = new_level;
-
 }
 
 //
 int remove_all_Files_In_Directory(const char *dirName) {
-    DIR *dir = opendir(dirName);
 
+    DIR *dir = opendir(dirName);
     if (dir == NULL) {
         perror("Error opening directory");
         return -1;

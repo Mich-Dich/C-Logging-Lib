@@ -39,7 +39,7 @@ void Calc_Func_Duration_Start(struct log_time_exact* StartTime);
 void Calc_Func_Duration(struct log_time_exact* StartTime);
 int register_thread_log_under_Name(pthread_t threadID, const char* name);
 
-/*  Formatting the LogMessages can be customised with the following tags
+/*  Formatting the LogMessages can be customized with the following tags
     to format all following Log Messages use: set_Formatting(char* format);
     e.g. set_Formatting("$B[$T] $L [$F]  $C$E")  or set_Formatting("$BTime:[$M $S] $L $E ==> $C")
     
@@ -145,10 +145,10 @@ static inline const char* ptr_To_String(void* pointer) { return (pointer == NULL
 // define conditional log macro for TRACE
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_LOG_Trace(message, ...)              do{ log_output(Trace, "", __func__, __FILE__, __LINE__, THREAD_ID, message, ##__VA_ARGS__); } while(0);
-    // Insert a separation line in Logoutput (-------)
-    #define CL_SEPARATOR()                          do{ print_Seperator(THREAD_ID); } while(0);
-    // Insert a separation line in Logoutput (=======)
-    #define CL_SEPARATOR_BIG()                      do{ print_Seperator_Big(THREAD_ID); } while(0);
+    // Insert a separation line in Log output (-------)
+    #define CL_SEPARATOR()                          do{ print_Separator(THREAD_ID); } while(0);
+    // Insert a separation line in Log output (=======)
+    #define CL_SEPARATOR_BIG()                      do{ print_Separator_Big(THREAD_ID); } while(0);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Trace(message, ...) ;
