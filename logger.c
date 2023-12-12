@@ -8,17 +8,16 @@
 #include <unistd.h>
 #include <inttypes.h>
 #include <dirent.h>
+#include <stdbool.h>
 
 
 #include "logger.h"
 
-#define LOGGER_FORMAT_FORMAT_MESSAGE(format, ...)               sprintf(Format_Buffer, format, ##__VA_ARGS__);              \
-                                                                strcat(message_out, Format_Buffer);                         \
-
+#define REGISTERED_THREAD_NAME_LEN_MAX 256
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
-
-#define REGISTERED_THREAD_NAME_LEN_MAX 256
+#define LOGGER_FORMAT_FORMAT_MESSAGE(format, ...)               sprintf(Format_Buffer, format, ##__VA_ARGS__);              \
+                                                                strcat(message_out, Format_Buffer);                         \
 
 typedef struct message_pluss_thread {
     char text[MAX_MEASSGE_SIZE];
@@ -37,11 +36,16 @@ typedef struct ThreadNameMap {
     struct ThreadNameMap* prev;
 } ThreadNameMap;
 
+typedef struct SpecificLogLevelFormat{
+    bool isInUse;
+    char* Format;
+} SpecificLogLevelFormat;
+
 // FATAL,ERROR,WARN,INFO,DEBUG,TRACE
-static const char* Console_Colour_Strings[6] = {"\x1b[1;41m", "\x1b[1;31m", "\x1b[1;93m", "\x1b[1;32m", "\x1b[1;94m", "\x1b[0;37m"};
+static const char* Console_Colour_Strings[LL_MAX_NUM] = {"\x1b[1;41m", "\x1b[1;31m", "\x1b[1;93m", "\x1b[1;32m", "\x1b[1;94m", "\x1b[0;37m"};
 static const char* Console_Colour_Reset = "\x1b[0;39m";
-static const char* level_str[6] = {"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
-static const char* seperator = "-------------------------------------------------------------------------------------------------------\n";
+static const char* level_str[LL_MAX_NUM] = {"FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
+static const char* seperator     = "-------------------------------------------------------------------------------------------------------\n";
 static const char* seperator_Big = "=======================================================================================================\n";
 static FILE* logFile;
 
@@ -49,8 +53,18 @@ static pthread_mutex_t LogLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t MainThread = 0;
 static enum log_level internal_level = Trace;
 static char* MainLogFileName = "unknown.txt";
-static char* TargetLogFormat = "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z";
-static char* TargetLogFormat_BACKUP = "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z";
+static char* m_GeneralLogFormat = "[Default] [$B$F: $G$E] - $B$C$E$Z";
+static char* m_GeneralLogFormat_BACKUP = "[Default] [$B$F: $G$E] - $B$C$E$Z";
+
+static SpecificLogLevelFormat SpecificLogFormatArray[] = { 
+    {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"}, 
+    {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"}, 
+    {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"}, 
+    {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"}, 
+    {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"}, 
+    {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"},
+};
+
 static int log_level_for_buffer = 0;
 static MessageBuffer Log_Message_Buffer = { .count = 0 };
 static ThreadNameMap* firstEntry = NULL;
@@ -68,16 +82,15 @@ void remove_Entry(pthread_t threadID);
 int remove_all_Files_In_Directory(const char *dirName);
 
 
-
 // Create or reset a Log-File: [LogFileName] and setup output format & stream
 // - [LogFileName] default folgfile name
-// - [LogFormat] starting log format
+// - [m_GeneralLogFormat] general format for LogLevels that are not specificly set
 // - [threadID] pthread_t of main thread
 // - [Use_seperate_Files_for_every_Thread] 0 = false
-int log_init(char* LogFileName, char* LogFormat, pthread_t threadID, int Use_seperate_Files_for_every_Thread) {
+int log_init(char* LogFileName, char* GeneralLogFormat, pthread_t threadID, int Use_seperate_Files_for_every_Thread) {
 
     MainLogFileName = LogFileName;    
-    TargetLogFormat = LogFormat;
+    m_GeneralLogFormat = GeneralLogFormat;
     MainThread = threadID;
 
     Loc_Use_seperate_Files_for_every_Thread = Use_seperate_Files_for_every_Thread ? true : false;
@@ -91,8 +104,6 @@ int log_init(char* LogFileName, char* LogFormat, pthread_t threadID, int Use_sep
     CL_LOG(Trace, "Initialize")
 
     register_thread_log_under_Name(threadID, MainLogFileName);
-    
-    CL_LOG(Trace, "Initialize")
     return 0;
 }
 
@@ -112,7 +123,7 @@ bool Create_Log_File(const char* FileName) {
     else {
 
         struct tm tm= getLocalTime();
-        fprintf(logFile, "[%04d/%02d/%02d - %02d:%02d:%02d] Log initalized\n    Output-file: [%s]\n    Starting-format: %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, FileName, TargetLogFormat);
+        fprintf(logFile, "[%04d/%02d/%02d - %02d:%02d:%02d] Log initalized\n    Output-file: [%s]\n    Starting-format: %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, FileName, m_GeneralLogFormat);
 
         if (LOG_LEVEL_ENABLED <= 4 || LOG_LEVEL_ENABLED >= 0) {
 
@@ -174,14 +185,21 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
         vsnprintf(message_formated, MAX_MEASSGE_SIZE, message, args_ptr);
     va_end(args_ptr);
 
-
     // Loop over Format string and build Final Message
-    int FormatLen = strlen(TargetLogFormat);
+
+/*#define LOGGER_FORMAT_FORMAT_MESSAGE(format, ...)     sprintf(Format_Buffer, format, ##__VA_ARGS__);
+                                                        strcat(message_out, Format_Buffer);             */
+
+    char* locTargetFormat = m_GeneralLogFormat;
+    if (SpecificLogFormatArray[level].isInUse)
+        locTargetFormat = SpecificLogFormatArray[level].Format;
+
+    int FormatLen = strlen(locTargetFormat);
     for (int x = 0; x < FormatLen; x++) {
 
-        if (TargetLogFormat[x] == '$' && x + 1 < FormatLen) {
+        if (locTargetFormat[x] == '$' && x + 1 < FormatLen) {
 
-            Format_Command[0] = TargetLogFormat[x + 1];
+            Format_Command[0] = locTargetFormat[x + 1];
             switch (Format_Command[0]) {
             
             // ------------------------------------  Basic Info  -------------------------------------------------------------------------------
@@ -301,7 +319,7 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
 
         else {
 
-            strncat(message_out, &TargetLogFormat[x], 1);
+            strncat(message_out, &locTargetFormat[x], 1);
         }
     }
     
@@ -431,15 +449,12 @@ ThreadNameMap* add_Thread_Name_Mapping(pthread_t thread, const char* name) {
 
         firstEntry = newEntry;
         lastEntry = newEntry;
-        CL_LOG(Trace, "   Added to list - was empty");
-    }
-
-    else {                      // Add to List-End
+    
+    } else {                      // Add to List-End
 
         lastEntry->next = newEntry;
         newEntry->prev = lastEntry;
         lastEntry = newEntry;
-        CL_LOG(Trace, "   Added to list - at end");
     }
     
     return newEntry;
@@ -466,15 +481,13 @@ void remove_Entry(pthread_t threadID) {
 
             firstEntry = firstEntry->next;
             firstEntry->prev = NULL;
-        }
-
-        else if (locPointer == lastEntry) { // Is Last?
+        
+        } else if (locPointer == lastEntry) { // Is Last?
 
             lastEntry = lastEntry->prev;
             lastEntry->next = NULL;
-        }
-
-        else {                              // is in middle
+        
+        } else {                              // is in middle
 
             locPointer->prev->next = locPointer->next;
             locPointer->next->prev = locPointer->prev;
@@ -510,28 +523,28 @@ ThreadNameMap* f_find_Entry(pthread_t threadID) {
 // Change Format of log messages and backup previous Format
 void set_Formating(char* LogFormat) {
 
-    TargetLogFormat_BACKUP = TargetLogFormat;
-    TargetLogFormat = LogFormat;
+    m_GeneralLogFormat_BACKUP = m_GeneralLogFormat;
+    m_GeneralLogFormat = LogFormat;
 }
 
 // Settis the Bckup version of Format to be used as Main Format
 void use_Formating_Backup() {
 
-    TargetLogFormat = TargetLogFormat_BACKUP;
+    m_GeneralLogFormat = m_GeneralLogFormat_BACKUP;
 }
 
 //
-void Format_Messages(char* out_mes, char* log_mes, const char* format, ...) {
+void Set_Format_For_Specific_Log_Level(enum log_level level, char* Format) {
 
-    char Format_Buffer[MAX_MEASSGE_SIZE];
+    SpecificLogFormatArray[level].isInUse = true;
+    SpecificLogFormatArray[level].Format = Format;
 
-    __builtin_va_list args;
-    va_start(args, format);
-    vsprintf(Format_Buffer, format, args);
-    va_end(args);
+}
 
-    strcat(out_mes, Format_Buffer);
-    strcat(log_mes, Format_Buffer);
+//
+void Disable_Format_For_Specific_Log_Level(enum log_level level) {
+
+    SpecificLogFormatArray[level].isInUse = false;
 }
 
 // ------------------------------------------------------------------------------------------ Misc ------------------------------------------------------------------------------------------

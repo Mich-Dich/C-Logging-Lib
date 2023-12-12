@@ -3,7 +3,6 @@
 #include <time.h>
 #include <pthread.h>
 #include <errno.h>
-#include <stdbool.h>
 
 // This enables the compilation of verious logging levels (FATAL & ERROR are always on)
 //  0    =>   FATAL + ERROR
@@ -30,7 +29,7 @@ struct log_time_exact{
 
 // ------------------------------------------------------------------------------ Main Functions ------------------------------------------------------------------------------
 
-int log_init(char* LogFileName, char* LogFormat, pthread_t threadID, int Use_seperate_Files_for_every_Thread) ;
+int log_init(char* LogFileName, char* GeneralLogFormat, pthread_t threadID, int Use_seperate_Files_for_every_Thread) ;
 void log_shutdown();
 void log_output(enum log_level level, const char* prefix, const char* funcName, char* fileName, int Line, pthread_t thread_id, const char* message, ...);
 void set_log_level(enum log_level new_level);
@@ -69,6 +68,8 @@ int register_thread_log_under_Name(pthread_t threadID, const char* name);
     $Z		New Line			Adds a new Line to the log*/
 void set_Formating(char* format);
 void use_Formating_Backup();
+void Set_Format_For_Specific_Log_Level(enum log_level level, char* Format);
+void Disable_Format_For_Specific_Log_Level(enum log_level level);
 
 // Define witch log levels should be written to log file directly and witch should be buffered
 //  0    =>   write all logs directly to log file
@@ -80,9 +81,6 @@ void set_buffer_Level();
 
 
 // ------------------------------------------------------------------------------ Helper Functions ------------------------------------------------------------------------------
-
-// Converts a bool value to a string
-static inline const char* bool_To_String(bool boolValue) { return boolValue ? " true" : "false"; }
 
 // checks pointers and returns " NULL" or "valid"
 static inline const char* ptr_To_String(void* pointer) { return (pointer == NULL) ? " NULL" : "valid"; }
