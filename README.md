@@ -11,8 +11,8 @@ Welcome to the C Logging Library repository! This library is designed to provide
 ```C
 #include <logger.h>
 
-// Call this at the start of your programm to set LogFile name and message formatting
-int log_init("logfile.log", "$B[$T] $L [$F] $C$E$Z");
+// Call this at the start of your program to set LogFile name and message formatting
+int log_init("log_file.log", "$B[$T] $L [$F] $C$E$Z", pthread_self(), 0);
 
 // You can change the message formatting at runtime for all following messages
 void set_formatting("$B[$T] $A-$F$E $C$Z");
@@ -26,7 +26,7 @@ void use_formatting_Backup();
 //  2    =>   buffer: TRACE + DEBUG
 //  3    =>   buffer: TRACE + DEBUG + INFO
 //  4    =>   buffer: TRACE + DEBUG + INFO + WARN
-void set_buffer_Level(2);
+void set_buffer_Level(4);
 
 // To log some information use one of the following macros
 CL_LOG(Trace, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
@@ -48,17 +48,16 @@ CL_LOG_FUNC_END("start param1: %d", someInt)    // With Args
 CL_VALIDATE(expr, messageSuccess, messageFailure)
 
 // Use this assert to make sure your condition is true
-// The CL_ASSERT macro inserts a 'return RetVal' if condition != true 
+// The CL_ASSERT macro uses a '__debugbreak()' if condition != true 
 CL_ASSERT(expr, messageSuccess, messageFailure, RetVal, ...)
 
-
-// Call this at the end of your programm to push all buffered messages into the log file
+// Call this at the end of your program to push all buffered messages into the log file
 void log_shutdown();
 
 ```
 
 ### formatting
-formatting the LogMessages can be customised with the following tags<br>
+formatting the LogMessages can be customized with the following tags<br>
 to format all following Log Messages use: set_formatting(char* format);<br>
 e.g. set_formatting("$B[$T] $L [$F]  $C$E")  or set_formatting("$BTime:[$M $S] $L $E ==> $C")
 
@@ -70,17 +69,17 @@ e.g. set_formatting("$B[$T] $L [$F]  $C$E")  or set_formatting("$BTime:[$M $S] $
 | $S   | Time Sec.    | ss                                |
 |      |              |                                   |
 | $N   | Date         | yyyy:mm:dd                        |
-| $Y	  | Year	        | yyyy                              |
-| $O	  | Month	       | mm                                |
-| $D	  | Day	         | dd                                |
+| $Y   | Year         | yyyy                              |
+| $O   | Month        | mm                                |
+| $D   | Day          | dd                                |
 |      |              |                                   |
-| $L	  | LogLevel     | TRACE, DEBUG … FATAL              |
-| $X	  | LogLevel     | add " " if logLevel INFO or DEBUG |
-| $F	  | Func. Name   | main, foo                         |
-| $A	  | File Name	   | main.c foo.c                      |
-| $B	  | Color Begin	 | from here the color starts        |
-| $E	  | Color End	   | from here the color ends          |
-| $C	  | Log message  | Formatted Message with variables  |
+| $L   | LogLevel     | TRACE, DEBUG … FATAL              |
+| $X   | LogLevel     | add " " if logLevel INFO or DEBUG |
+| $F   | Func. Name   | main, foo                         |
+| $A   | File Name    | main.c foo.c                      |
+| $B   | Color Begin	 | from here the color starts        |
+| $E   | Color End    | from here the color ends          |
+| $C   | Log message  | Formatted Message with variables  |
 | $Z   | new Line     | Add a Line Break To your message  |
 
 ### Implemented Features
@@ -130,9 +129,6 @@ To get started with the C Logging Library, follow these steps:
 
 For more detailed instructions and examples, refer to the documentation.
 
-## Contributing
-
-We welcome contributions! If you have ideas, bug reports, or want to contribute code, please open an issue or submit a pull request. Check out our [contribution guidelines](CONTRIBUTING.md) for more details.
 
 ## License
 
