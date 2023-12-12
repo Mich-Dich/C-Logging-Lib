@@ -28,13 +28,13 @@ void use_formatting_Backup();
 //  4    =>   buffer: TRACE + DEBUG + INFO + WARN
 void set_buffer_Level(4);
 
-// To log some information use one of the following macros
-CL_LOG(Trace, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Debug, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Info, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Warn, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Error, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
-CL_LOG(Fatal, "Your message goes here use standard formatting: int: %d, string: %s", someInt, someStr)
+// To log some information use one of the following macros (use standard C formatting)
+CL_LOG(Trace, "int: %d, string: %s", someInt, someStr)
+CL_LOG(Debug, "int: %d, string: %s", someInt, someStr)
+CL_LOG(Info, "int: %d, string: %s", someInt, someStr)
+CL_LOG(Warn, "int: %d, string: %s", someInt, someStr)
+CL_LOG(Error, "int: %d, string: %s", someInt, someStr)
+CL_LOG(Fatal, "int: %d, string: %s", someInt, someStr)
 
 // Call this to automatically log function Starts 
 CL_LOG_FUNC_START("")                           // No Args
@@ -114,33 +114,33 @@ e.g. set_formatting("$B[$T] $L [$F]  $C$E")  or set_formatting("$BTime:[$M $S] $
 5. **Buffering:**
    - Optimize logging performance with buffering mechanisms to reduce the overhead of frequent disk or network writes.
 
-6. **Thread-Specific Logging:**
+6. **Multithreading:**
+    - Robust thread safety mechanisms, ensuring the library works seamlessly in multithreading environments.
+
+7. **Thread Safety:**
+   - Enhancements to achieve solid thread safety, effectively preventing race conditions and ensuring reliable logging in concurrent applications.
+
+8. **Thread-Specific Logging:**
    - Achieve enhanced thread isolation by allowing each pthread (POSIX threads) to log to its dedicated log file. This feature ensures a clear separation of log entries based on the originating thread.Runtime Log 
 
-7. **File Renaming:**
+9. **File Renaming:**
    - Enable the renaming of log files at runtime to facilitate better organization and management. This feature provides flexibility in updating log file names based on specific events or conditions, enhancing log file tracking and analysis.
-   
-8. **Log-Level Specific Formatting:**
+
+10. **Log-Level Specific Formatting:**
    - Tailor the format of log messages for each log level independently. This feature allows you to customize the appearance of log entries based on their severity, making it easier to identify and prioritize issues during analysis.
 
 ### Planned Features
 
-1. **Multithreading:**
-   - Introduce thread safety mechanisms to ensure the library works seamlessly in multithreading environments.
-
-2. **Thread Safety:**
-   - Enhance the library's thread safety to prevent race conditions and ensure reliable logging in concurrent applications.
-
-3. **Platform Support:**
+1. **Platform Support:**
    - Expand the library to support multiple platforms, making it versatile for various deployment scenarios.
 
-4. **Log Rotation:**
+2. **Log Rotation:**
    - Implement log rotation to prevent log files from growing too large, with configurable options for size limits, retention, and rotation intervals.
 
-5. **Error Handling:**
+3. **Error Handling:**
    - Implement robust error handling mechanisms to gracefully handle situations like log file write failures and provide informative error messages.
 
-6. **Asynchronous Logging:**
+4. **Asynchronous Logging:**
    - Introduce asynchronous logging capabilities to minimize performance impact and improve the responsiveness of your application.
 
 ## Getting Started
