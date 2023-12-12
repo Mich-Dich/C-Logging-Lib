@@ -67,12 +67,6 @@ static SpecificLogLevelFormat SpecificLogFormatArray[] = {
     {false, "[$B$L$X$E] [$B$F: $G$E] - $B$C$E$Z"},
 };
 
-// ------------------------------------------------------------------------------------------ Semi-inline functions ------------------------------------------------------------------------------------------
-// Print a separator "---"
-void print_Separator(pthread_t threadID)        { output_Message(Trace, separator, threadID); }
-
-// Print a separator "==="
-void print_Separator_Big(pthread_t threadID)    { output_Message(Trace, separator_Big, threadID); }
 
 // ------------------------------------------------------------------------------------------ private functions ------------------------------------------------------------------------------------------
 
@@ -85,6 +79,13 @@ ThreadNameMap* add_Thread_Name_Mapping(pthread_t thread, const char* name);
 ThreadNameMap* f_find_Entry(pthread_t threadID);
 void remove_Entry(pthread_t threadID);
 int remove_all_Files_In_Directory(const char *dirName);
+
+// ------------------------------------------------------------------------------------------ Semi-inline functions ------------------------------------------------------------------------------------------
+// Print a separator "---"
+void print_Separator(pthread_t threadID)        { output_Message(Trace, separator, threadID); }
+
+// Print a separator "==="
+void print_Separator_Big(pthread_t threadID)    { output_Message(Trace, separator_Big, threadID); }
 
 
 // Create or reset a Log-File: [LogFileName] and setup output format & stream
