@@ -131,16 +131,16 @@ e.g. set_formatting("$B[$T] $L [$F]  $C$E")  or set_formatting("$BTime:[$M $S] $
 
 ### Planned Features
 
-3. **Platform Support:**
+1. **Platform Support:**
    - Expand the library to support multiple platforms, making it versatile for various deployment scenarios.
 
-4. **Log Rotation:**
+2. **Log Rotation:**
    - Implement log rotation to prevent log files from growing too large, with configurable options for size limits, retention, and rotation intervals.
 
-5. **Error Handling:**
+3. **Error Handling:**
    - Implement robust error handling mechanisms to gracefully handle situations like log file write failures and provide informative error messages.
 
-6. **Asynchronous Logging:**
+4. **Asynchronous Logging:**
    - Introduce asynchronous logging capabilities to minimize performance impact and improve the responsiveness of your application.
 
 ## Getting Started
