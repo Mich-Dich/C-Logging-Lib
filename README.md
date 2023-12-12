@@ -44,6 +44,21 @@ CL_LOG_FUNC_START("start param1: %d", someInt)  // With Args
 CL_LOG_FUNC_END("")                             // No Args
 CL_LOG_FUNC_END("start param1: %d", someInt)    // With Args
 
+// rename the log-file of a pthread
+int register_thread_log_under_Name(pthread_t threadID, const char* name);
+
+// Change general-format of all following log-messages and backup old general-format
+void set_Formatting(char* format);
+
+// Use the Backup version of general-format to be used as Main Format
+void use_Formatting_Backup();
+
+// 
+void Set_Format_For_Specific_Log_Level(enum log_level level, char* Format);
+
+//
+void Disable_Format_For_Specific_Log_Level(enum log_level level);
+
 // Use this validation to make check some condition and log different messages
 CL_VALIDATE(expr, messageSuccess, messageFailure)
 
@@ -98,6 +113,15 @@ e.g. set_formatting("$B[$T] $L [$F]  $C$E")  or set_formatting("$BTime:[$M $S] $
 
 5. **Buffering:**
    - Optimize logging performance with buffering mechanisms to reduce the overhead of frequent disk or network writes.
+
+6. **Thread-Specific Logging:**
+   - Achieve enhanced thread isolation by allowing each pthread (POSIX threads) to log to its dedicated log file. This feature ensures a clear separation of log entries based on the originating thread.Runtime Log 
+
+7. **File Renaming:**
+   - Enable the renaming of log files at runtime to facilitate better organization and management. This feature provides flexibility in updating log file names based on specific events or conditions, enhancing log file tracking and analysis.
+   
+8. **Log-Level Specific Formatting:**
+   - Tailor the format of log messages for each log level independently. This feature allows you to customize the appearance of log entries based on their severity, making it easier to identify and prioritize issues during analysis.
 
 ### Planned Features
 

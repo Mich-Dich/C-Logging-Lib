@@ -35,9 +35,9 @@ void log_output(enum log_level level, const char* prefix, const char* funcName, 
 void set_log_level(enum log_level new_level);
 void print_Separator(pthread_t threadID);
 void print_Separator_Big(pthread_t threadID);
+int register_thread_log_under_Name(pthread_t threadID, const char* name);
 void Calc_Func_Duration_Start(struct log_time_exact* StartTime);
 void Calc_Func_Duration(struct log_time_exact* StartTime);
-int register_thread_log_under_Name(pthread_t threadID, const char* name);
 
 /*  Formatting the LogMessages can be customized with the following tags
     to format all following Log Messages use: set_Formatting(char* format);
