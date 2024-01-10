@@ -4,11 +4,12 @@
 #include <pthread.h>
 #include <libgen.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <inttypes.h>
 #include <dirent.h>
 #include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "logger.h"
 
@@ -55,6 +56,7 @@ static MessageBuffer Log_Message_Buffer = { .count = 0 };
 static ThreadNameMap* firstEntry = NULL;
 static ThreadNameMap* lastEntry = NULL;
 static bool Loc_Use_separate_Files_for_every_Thread = true;
+static const char *directoryName = "./logs";
 static char* MainLogFileName = "unknown.txt";
 static char* m_GeneralLogFormat = "[Default] [$B$F: $G$E] - $B$C$E$Z";
 static char* m_GeneralLogFormat_BACKUP = "[Default] [$B$F: $G$E] - $B$C$E$Z";
@@ -99,8 +101,12 @@ int log_init(char* LogFileName, char* GeneralLogFormat, pthread_t threadID, int 
     m_GeneralLogFormat = GeneralLogFormat;
     Loc_Use_separate_Files_for_every_Thread = Use_separate_Files_for_every_Thread ? true : false;
 
-    // Replace with your directory path
-    const char *directoryName = "./Logs";
+    if (mkdir(directoryName, 0777) == 0) {
+        printf("Folder created successfully.\n");
+    } else {
+        perror("Error creating folder");
+    }
+
     if (remove_all_Files_In_Directory(directoryName) != 0) 
         fprintf(stderr, "Error removing files in the directory.\n");
 
@@ -367,7 +373,7 @@ void WriteMessagesToFile() {
             else {
 
                 //printf("    loc_Entry: %s [tread: %lu]\n", ptr_To_String(loc_Entry), Log_Message_Buffer.messages[x].thread);
-                snprintf(filename, sizeof(filename), "Logs/thread_log_%lu.log", (unsigned long)Log_Message_Buffer.messages[x].thread);
+                snprintf(filename, sizeof(filename), "%s/thread_log_%lu.log", directoryName, (unsigned long)Log_Message_Buffer.messages[x].thread);
                 if(access(filename, F_OK) != 0) 
                     Create_Log_File(filename);
             }
@@ -375,7 +381,7 @@ void WriteMessagesToFile() {
 
         else {
 
-            snprintf(filename, sizeof(filename), "Logs/%s.log", MainLogFileName);
+            snprintf(filename, sizeof(filename), "%s/%s.log", directoryName, MainLogFileName);
             if(access(filename, F_OK) != 0) 
                 Create_Log_File(filename);
         }
@@ -385,7 +391,7 @@ void WriteMessagesToFile() {
         FILE* file = fopen(filename, "a");
         if (file == NULL) {
 
-            perror("Error opening the file");
+            // perror("Error opening the file");
             continue;
         }
         
@@ -398,10 +404,10 @@ void WriteMessagesToFile() {
 int register_thread_log_under_Name(pthread_t threadID, const char* name) {
 
     char filename[REGISTERED_THREAD_NAME_LEN_MAX];
-    snprintf(filename, sizeof(filename), "Logs/thread_log_%lu.log", (unsigned long)threadID);
+    snprintf(filename, sizeof(filename), "%s/thread_log_%lu.log", directoryName, (unsigned long)threadID);
 
     char newFilename[REGISTERED_THREAD_NAME_LEN_MAX];
-    snprintf(newFilename, sizeof(newFilename), "Logs/%s.log", name);
+    snprintf(newFilename, sizeof(newFilename), "%s/%s.log", directoryName, name);
 
     // Create a new entry in list
     add_Thread_Name_Mapping(threadID, newFilename);

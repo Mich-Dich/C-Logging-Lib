@@ -127,24 +127,20 @@ static inline const char* ptr_To_String(void* pointer) { return (pointer == NULL
 // define conditional log macro for DEBUG
 #if LOG_LEVEL_ENABLED >= 3
     #define CL_LOG_Debug(message, ...)              do{ log_output(Debug, "", __func__, __FILE__, __LINE__, THREAD_ID, message, ##__VA_ARGS__); } while(0);
-
-    // Logs the end of a function, it would be helpful to has the '$F' in your format
-    #define CL_LOG_FUNC_END(message, ...)           do{ log_output(Debug, "END ", __func__, __FILE__, __LINE__, THREAD_ID, message, ##__VA_ARGS__); } while(0);
-
-    // Logs the start of a function, it would be helpful to has the '$F' in your format
-    #define CL_LOG_FUNC_START(message, ...)         do{ log_output(Debug, "START ", __func__, __FILE__, __LINE__, THREAD_ID, message, ##__VA_ARGS__); } while(0);
 #else
     // Disabled by LogLevel
     #define CL_LOG_Debug(message, ...)              do{} while(0);
-    // Disabled by LogLevel
-    #define CL_LOG_FUNC_END(message, ...)           do{} while(0);
-    // Disabled by LogLevel
-    #define CL_LOG_FUNC_START(message, ...)         do{} while(0);
 #endif
 
 // define conditional log macro for TRACE
 #if LOG_LEVEL_ENABLED >= 4
     #define CL_LOG_Trace(message, ...)              do{ log_output(Trace, "", __func__, __FILE__, __LINE__, THREAD_ID, message, ##__VA_ARGS__); } while(0);
+
+    // Logs the end of a function, it would be helpful to has the '$F' in your format
+    #define CL_LOG_FUNC_END(message, ...)           do{ log_output(Trace, "END ", __func__, __FILE__, __LINE__, THREAD_ID, message, ##__VA_ARGS__); } while(0);
+
+    // Logs the start of a function, it would be helpful to has the '$F' in your format
+    #define CL_LOG_FUNC_START(message, ...)         do{ log_output(Trace, "START ", __func__, __FILE__, __LINE__, THREAD_ID, message, ##__VA_ARGS__); } while(0);
     // Insert a separation line in Log output (-------)
     #define CL_SEPARATOR()                          do{ print_Separator(THREAD_ID); } while(0);
     // Insert a separation line in Log output (=======)
@@ -152,6 +148,10 @@ static inline const char* ptr_To_String(void* pointer) { return (pointer == NULL
 #else
     // Disabled by LogLevel
     #define CL_LOG_Trace(message, ...) ;
+    // Disabled by LogLevel
+    #define CL_LOG_FUNC_END(message, ...)           do{} while(0);
+    // Disabled by LogLevel
+    #define CL_LOG_FUNC_START(message, ...)         do{} while(0);
     // Disabled by LogLevel
     #define CL_SEPARATOR()                          do{} while(0);
     #define CL_SEPARATOR_BIG()                      do{} while(0);
@@ -163,7 +163,7 @@ static inline const char* ptr_To_String(void* pointer) { return (pointer == NULL
 // ------------------------------------------------------------------------------ VALIDATION / ASSERTION ------------------------------------------------------------------------------
 #define CL_VALIDATE(expr, messageSuccess, messageFailure, abortCommand, ...)                \
         if (expr) {                                                                         \
-            CL_LOG_Trace(messageSuccess, ##__VA_ARGS__)                                     \
+            CL_LOG_Debug(messageSuccess, ##__VA_ARGS__)                                     \
         } else {                                                                            \
             CL_LOG_Error(messageFailure, ##__VA_ARGS__)                                     \
             abortCommand;                                                                   \
